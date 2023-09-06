@@ -28,18 +28,25 @@ app.use(session({ secret: "super-secret" })); // Session setup
 
 /** Handle login display and form submit */
 app.post("/login", (req, res) => {
-  // with placeholder
   let { username, password } = req.body;
-  console.log("login", req.body);
 
   if (username && password) {
-    connection.query(
-      "SELECT * FROM useraccounts WHERE username = ? AND password = ?",
-      [username, password],
-      function (err, results) {
-        res.send(results);
-      }
-    );
+    let findUser = async (pwd) => {
+      connection.query(
+        "SELECT * FROM useraccounts WHERE username = ?",
+        [username],
+        function (err, results) {
+          bcrypt.compare(pwd, results[0].password, function (err, isMatch) {
+            if (isMatch) {
+              // Todo: issue JWT
+              res.send(results);
+              console.log(isMatch);
+            }
+          });
+        }
+      );
+    };
+    findUser(password);
   }
 });
 
@@ -51,12 +58,9 @@ app.post("/register", (req, res) => {
   console.log("register", req.body);
 
   if (username && password) {
-    let gethashpwd = async () => {
-      console.log("pass", password);
+    // hash password and save to db
+    let registerNewUser = async () => {
       let hashpwd = await bcrypt.hash(password, saltRounds);
-
-      console.log("hashpwd", hashpwd);
-
       connection.query(
         "INSERT INTO useraccounts (username, password, email, active) VALUES (?,?,?,?)",
         [username, hashpwd, email, true],
@@ -66,7 +70,7 @@ app.post("/register", (req, res) => {
         }
       );
     };
-    gethashpwd();
+    registerNewUser();
   }
 });
 
