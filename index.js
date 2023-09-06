@@ -2,6 +2,9 @@ const express = require("express");
 const session = require("express-session");
 const bodyParser = require("body-parser");
 const mysql = require("mysql2");
+const bcrypt = require("bcrypt");
+
+const saltRounds = 10;
 
 const app = express();
 app.use(express.json());
@@ -27,8 +30,7 @@ app.use(session({ secret: "super-secret" })); // Session setup
 app.post("/login", (req, res) => {
   // with placeholder
   let { username, password } = req.body;
-  console.log(req.body);
-  console.log("post");
+  console.log("login", req.body);
 
   if (username && password) {
     connection.query(
@@ -46,17 +48,25 @@ app.post("/login", (req, res) => {
 app.post("/register", (req, res) => {
   // with placeholder
   let { username, password, email } = req.body;
-  console.log(req.body);
-  console.log("post");
+  console.log("register", req.body);
 
   if (username && password) {
-    connection.query(
-      "INSERT INTO useraccounts (username, password, email, active) VALUES (?,?,?,?)",
-      [username, password, email, true],
-      function (err, results) {
-        res.send(results);
-      }
-    );
+    let gethashpwd = async () => {
+      console.log("pass", password);
+      let hashpwd = await bcrypt.hash(password, saltRounds);
+
+      console.log("hashpwd", hashpwd);
+
+      connection.query(
+        "INSERT INTO useraccounts (username, password, email, active) VALUES (?,?,?,?)",
+        [username, hashpwd, email, true],
+        function (err, results) {
+          res.send(results);
+          console.log(err);
+        }
+      );
+    };
+    gethashpwd();
   }
 });
 
