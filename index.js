@@ -18,8 +18,7 @@ const port = config.port;
 app.use(bodyParser.urlencoded({ extended: true })); // Setup the body parser to handle form submits
 app.use(session({ secret: "super-secret" })); // Session setup
 
-//TODO catchasyncerror
-// TODO JWT
+// TODO catchasyncerror
 // TODO Protected Route
 
 /** Handle login display and form submit */
@@ -57,7 +56,7 @@ app.post("/login", (req, res) => {
 /** Handle user creation */
 app.post("/register", (req, res) => {
   // with placeholder
-  let { username, password, email } = req.body;
+  let { username, password, email, usergroup } = req.body;
   console.log("register", req.body);
 
   if (username && password) {
@@ -65,8 +64,8 @@ app.post("/register", (req, res) => {
     let registerNewUser = async (pwd, saltRnd) => {
       let hashpwd = await bcrypt.hash(pwd, saltRnd);
       connection.query(
-        "INSERT INTO useraccounts (username, password, email, active) VALUES (?,?,?,?)",
-        [username, hashpwd, email, true],
+        "INSERT INTO useraccounts (username, password, email, usergroup, active) VALUES (?,?,?,?,?)",
+        [username, hashpwd, email, usergroup, true],
         function (err, results) {
           res.send(results);
           console.log(err);
@@ -74,6 +73,29 @@ app.post("/register", (req, res) => {
       );
     };
     registerNewUser(password, saltRounds);
+  }
+});
+
+/** Full update based on username, instead of patch (partial) */
+app.put("/users", (req, res) => {
+  // with placeholder
+  let { username, password, email, usergroup } = req.body;
+  console.log("update user", req.body);
+
+  if (username && password) {
+    // hash password and save to db
+    let updateUserDetails = async (pwd, saltRnd) => {
+      let hashpwd = await bcrypt.hash(pwd, saltRnd);
+      connection.query(
+        "UPDATE kanban.useraccounts SET password = ?, email = ?, usergroup = ?, active = ? WHERE username = ?",
+        [hashpwd, email, usergroup, true, username],
+        function (err, results) {
+          res.send(results);
+          console.log(err);
+        }
+      );
+    };
+    updateUserDetails(password, saltRounds);
   }
 });
 
