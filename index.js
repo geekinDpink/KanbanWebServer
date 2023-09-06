@@ -41,6 +41,7 @@ app.post("/login", (req, res) => {
   }
 });
 
+//Todo
 /** Handle user creation */
 app.post("/register", (req, res) => {
   // with placeholder
