@@ -1,23 +1,17 @@
 const express = require("express");
 const session = require("express-session");
 const bodyParser = require("body-parser");
-const mysql = require("mysql2");
 const bcrypt = require("bcrypt");
+const connection = require("./config/dbConfig");
+const config = require("./config/config");
+
 require("dotenv").config();
 
-const saltRounds = parseInt(process.env.SALT_ROUNDS); // return int as string
+const saltRounds = config.saltRound; // return int as string
 
 const app = express();
 app.use(express.json());
-const port = 8080;
-
-// create the connection to database
-const connection = mysql.createConnection({
-  host: "localhost",
-  user: "root",
-  password: process.env.DB_PASSWORD,
-  database: "kanban",
-});
+const port = config.port;
 
 // Inititalize the app and add middleware
 app.use(bodyParser.urlencoded({ extended: true })); // Setup the body parser to handle form submits
@@ -61,8 +55,8 @@ app.post("/register", (req, res) => {
 
   if (username && password) {
     // hash password and save to db
-    let registerNewUser = async () => {
-      let hashpwd = await bcrypt.hash(password, saltRounds);
+    let registerNewUser = async (pwd, saltRnd) => {
+      let hashpwd = await bcrypt.hash(pwd, saltRnd);
       connection.query(
         "INSERT INTO useraccounts (username, password, email, active) VALUES (?,?,?,?)",
         [username, hashpwd, email, true],
@@ -72,7 +66,7 @@ app.post("/register", (req, res) => {
         }
       );
     };
-    registerNewUser();
+    registerNewUser(password, saltRounds);
   }
 });
 
