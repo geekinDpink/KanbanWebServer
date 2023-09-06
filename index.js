@@ -4,6 +4,7 @@ const bodyParser = require("body-parser");
 const bcrypt = require("bcrypt");
 const connection = require("./config/dbConfig");
 const config = require("./config/config");
+const jwt = require("jsonwebtoken");
 
 require("dotenv").config();
 
@@ -35,8 +36,11 @@ app.post("/login", (req, res) => {
           bcrypt.compare(pwd, results[0].password, function (err, isMatch) {
             if (isMatch) {
               // Todo: issue JWT
-              res.send(results);
               console.log(isMatch);
+              // process.env.JWT_SECRET
+              var token = jwt.sign({ foo: "bar" }, process.env.JWT_SECRET);
+              results[0].token = token;
+              res.send(results);
             }
           });
         }
