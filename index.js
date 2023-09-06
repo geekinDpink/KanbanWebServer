@@ -3,8 +3,9 @@ const session = require("express-session");
 const bodyParser = require("body-parser");
 const mysql = require("mysql2");
 const bcrypt = require("bcrypt");
+require("dotenv").config();
 
-const saltRounds = 10;
+const saltRounds = parseInt(process.env.SALT_ROUNDS); // return int as string
 
 const app = express();
 app.use(express.json());
@@ -14,7 +15,7 @@ const port = 8080;
 const connection = mysql.createConnection({
   host: "localhost",
   user: "root",
-  password: "pass",
+  password: process.env.DB_PASSWORD,
   database: "kanban",
 });
 
