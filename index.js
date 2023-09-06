@@ -28,19 +28,22 @@ app.post("/login", (req, res) => {
 
   if (username && password) {
     let findUser = async (pwd) => {
-      // check if password matches db hash password
+      // check if password matches db hash password and generate jwt as token {status, token}
       connection.query(
         "SELECT * FROM useraccounts WHERE username = ?",
         [username],
         function (err, results) {
-          bcrypt.compare(pwd, results[0].password, function (err, isMatch) {
+          const { username: dbUser, password: dbPass } = results[0];
+          bcrypt.compare(pwd, dbPass, function (err, isMatch) {
             if (isMatch) {
-              // Todo: issue JWT
-              console.log(isMatch);
-              // process.env.JWT_SECRET
-              var token = jwt.sign({ foo: "bar" }, process.env.JWT_SECRET);
-              results[0].token = token;
-              res.send(results);
+              // store username in token
+              var token = jwt.sign({ data: dbUser }, process.env.JWT_SECRET);
+              // results[0].token = token;
+              // res.send(results);
+              res.status(200).json({
+                status: "success",
+                token: token,
+              });
             }
           });
         }
