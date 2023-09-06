@@ -79,22 +79,41 @@ app.post("/register", (req, res) => {
 /** Full update based on username, instead of patch (partial) */
 app.put("/users", (req, res) => {
   // with placeholder
-  let { username, password, email, usergroup } = req.body;
+  let { username, password, email, usergroup, myusergroup } = req.body;
   console.log("update user", req.body);
 
-  if (username && password) {
+  // for admin, update all fields
+  let updateUserAllDetails = async (pwd, saltRnd) => {
     // hash password and save to db
-    let updateUserDetails = async (pwd, saltRnd) => {
-      let hashpwd = await bcrypt.hash(pwd, saltRnd);
-      connection.query(
-        "UPDATE kanban.useraccounts SET password = ?, email = ?, usergroup = ?, active = ? WHERE username = ?",
-        [hashpwd, email, usergroup, true, username],
-        function (err, results) {
-          res.send(results);
-          console.log(err);
-        }
-      );
-    };
+    let hashpwd = await bcrypt.hash(pwd, saltRnd);
+    connection.query(
+      "UPDATE kanban.useraccounts SET password = ?, email = ?, usergroup = ?, active = ? WHERE username = ?",
+      [hashpwd, email, usergroup, true, username],
+      function (err, results) {
+        res.send(results);
+        console.log(err);
+      }
+    );
+  };
+
+  // for user, update only the email and pass
+  let updateUserDetails = async (pwd, saltRnd) => {
+    // hash password and save to db
+    let hashpwd = await bcrypt.hash(pwd, saltRnd);
+    connection.query(
+      "UPDATE kanban.useraccounts SET password = ?, email = ? WHERE username = ?",
+      [hashpwd, email, username],
+      function (err, results) {
+        res.send(results);
+        console.log(err);
+      }
+    );
+  };
+
+  // check if the user doing the updating is admin
+  if (myusergroup === "admin") {
+    updateUserAllDetails(password, saltRounds);
+  } else {
     updateUserDetails(password, saltRounds);
   }
 });
