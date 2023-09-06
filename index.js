@@ -32,6 +32,7 @@ app.post("/login", (req, res) => {
 
   if (username && password) {
     let findUser = async (pwd) => {
+      // check if password matches db hash password
       connection.query(
         "SELECT * FROM useraccounts WHERE username = ?",
         [username],
