@@ -20,13 +20,14 @@ app.use(session({ secret: "super-secret" })); // Session setup
 
 // TODO catchasyncerror
 // TODO Protected Route
+// TODO Got token -> Sessionislogged on
 
 /** Handle login display and form submit */
 app.post("/login", (req, res) => {
   let { username, password } = req.body;
 
   if (username && password) {
-    let findUser = async (pwd) => {
+    let findUser = async (username, pwd) => {
       // check if password matches db hash password and generate jwt as token {status, token}
       connection.query(
         "SELECT * FROM useraccounts WHERE username = ?",
@@ -48,7 +49,7 @@ app.post("/login", (req, res) => {
         }
       );
     };
-    findUser(password);
+    findUser(username, password);
   }
 });
 
@@ -115,6 +116,52 @@ app.put("/users", (req, res) => {
     updateUserAllDetails(password, saltRounds);
   } else {
     updateUserDetails(password, saltRounds);
+  }
+});
+
+/** Admin view all users*/
+app.post("/users", (req, res) => {
+  let { myusergroup } = req.body;
+
+  // Find all users
+  let getAllUser = async () => {
+    connection.query("SELECT * FROM useraccounts", function (err, results) {
+      res.send(results);
+      console.log(err);
+    });
+  };
+
+  // check if the user doing the updating is admin
+  if (myusergroup === "admin") {
+    getAllUser();
+    console.log("isAdmin");
+  } else {
+    return res.status(401).end("User is not authorized"); // not authorized
+  }
+});
+
+/** Admin find user by id */
+app.post("/user", (req, res) => {
+  let { username, myusergroup } = req.body;
+
+  // find user by username
+  let getUserById = async (username) => {
+    connection.query(
+      "SELECT * FROM useraccounts WHERE username = ?",
+      [username],
+      function (err, results) {
+        res.send(results);
+        console.log(err);
+      }
+    );
+  };
+
+  // check if the user doing the updating is admin
+  if (myusergroup === "admin") {
+    getUserById(username);
+    console.log("isAdmin");
+  } else {
+    return res.status(401).end("User is not authorized"); // not authorized
   }
 });
 
