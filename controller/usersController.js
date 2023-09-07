@@ -99,7 +99,7 @@ const getUserById = async (username2) => {
   );
 };
 
-const controllers = {
+const usersControllers = {
   findUser,
   registerNewUser,
   updateUserAllDetails,
@@ -108,4 +108,4 @@ const controllers = {
   getUserById,
 };
 
-module.exports = controllers;
+module.exports = usersControllers;

@@ -22,7 +22,6 @@ app.use(session({ secret: "super-secret" })); // Session setup
 // Error Handling: Missing Params, Authorized users, DB Query, JWT sign
 // TODO DB Query Error Handling
 // TODO catchasyncerror wrapper
-// TODO Protected Route
 // TODO Got token -> Sessionislogged on
 // TODO Send JWT in cookies
 // TODO Add expiry and refresh token
@@ -214,6 +213,19 @@ app.post("/user", verifyToken, (req, res) => {
   }
 });
 
+/** Get all usergroups*/
+app.get("/usergroups", verifyToken, (req, res) => {
+  // find user by username
+  let getAllUserGroups = async () => {
+    connection.query("SELECT * FROM usergroups", function (err, results) {
+      res.send(results);
+      console.log(err);
+    });
+  };
+
+  getAllUserGroups();
+});
+
 /** For testing */
 // app.get("/login", (req, res) => {
 //   // with placeholder
@@ -265,5 +277,5 @@ app.post("/user", verifyToken, (req, res) => {
 
 /** App listening on port */
 app.listen(port, () => {
-  console.log(`MyBank app listening at http://localhost:${port}`);
+  console.log(`Kanban Web Server listening at http://localhost:${port}`);
 });
