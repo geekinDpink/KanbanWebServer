@@ -62,18 +62,24 @@ app.post("/register", (req, res) => {
 
   if (username && password) {
     // hash password and save to db
-    let registerNewUser = async (pwd, saltRnd) => {
+    let registerNewUser = async (
+      pwd,
+      saltRnd,
+      username2,
+      email2,
+      usergroup2
+    ) => {
       let hashpwd = await bcrypt.hash(pwd, saltRnd);
       connection.query(
         "INSERT INTO useraccounts (username, password, email, usergroup, active) VALUES (?,?,?,?,?)",
-        [username, hashpwd, email, usergroup, true],
+        [username2, hashpwd, email2, usergroup2, true],
         function (err, results) {
           res.send(results);
           console.log(err);
         }
       );
     };
-    registerNewUser(password, saltRounds);
+    registerNewUser(password, saltRounds, username, email, usergroup);
   }
 });
 
@@ -84,12 +90,18 @@ app.put("/users", (req, res) => {
   console.log("update user", req.body);
 
   // for admin, update all fields
-  let updateUserAllDetails = async (pwd, saltRnd) => {
+  let updateUserAllDetails = async (
+    pwd,
+    saltRnd,
+    email2,
+    usergroup2,
+    username2
+  ) => {
     // hash password and save to db
     let hashpwd = await bcrypt.hash(pwd, saltRnd);
     connection.query(
       "UPDATE kanban.useraccounts SET password = ?, email = ?, usergroup = ?, active = ? WHERE username = ?",
-      [hashpwd, email, usergroup, true, username],
+      [hashpwd, email2, usergroup2, true, username2],
       function (err, results) {
         res.send(results);
         console.log(err);
@@ -98,7 +110,7 @@ app.put("/users", (req, res) => {
   };
 
   // for user, update only the email and pass
-  let updateUserDetails = async (pwd, saltRnd) => {
+  let updateUserDetails = async (pwd, saltRnd, email2, username2) => {
     // hash password and save to db
     let hashpwd = await bcrypt.hash(pwd, saltRnd);
     connection.query(
@@ -113,9 +125,9 @@ app.put("/users", (req, res) => {
 
   // check if the user doing the updating is admin
   if (myusergroup === "admin") {
-    updateUserAllDetails(password, saltRounds);
+    updateUserAllDetails(password, saltRounds, email, usergroup, username);
   } else {
-    updateUserDetails(password, saltRounds);
+    updateUserDetails(password, saltRounds, email2, username2);
   }
 });
 
@@ -145,10 +157,10 @@ app.post("/user", (req, res) => {
   let { username, myusergroup } = req.body;
 
   // find user by username
-  let getUserById = async (username) => {
+  let getUserById = async (username2) => {
     connection.query(
       "SELECT * FROM useraccounts WHERE username = ?",
-      [username],
+      [username2],
       function (err, results) {
         res.send(results);
         console.log(err);
@@ -166,16 +178,16 @@ app.post("/user", (req, res) => {
 });
 
 /** For testing */
-app.get("/login", (req, res) => {
-  // with placeholder
-  connection.query(
-    "SELECT * FROM useraccounts",
-    ["username", "password"],
-    function (err, results) {
-      res.send(results);
-    }
-  );
-});
+// app.get("/login", (req, res) => {
+//   // with placeholder
+//   connection.query(
+//     "SELECT * FROM useraccounts",
+//     ["username", "password"],
+//     function (err, results) {
+//       res.send(results);
+//     }
+//   );
+// });
 
 // app.post("/login", (req, res) => {
 //   const { username, password } = req.body;
