@@ -5,6 +5,7 @@ const bcrypt = require("bcrypt");
 const connection = require("./config/dbConfig");
 const config = require("./config/config");
 const jwt = require("jsonwebtoken");
+const { verifyToken } = require("./middleware/auth");
 
 require("dotenv").config();
 
@@ -18,12 +19,13 @@ const port = config.port;
 app.use(bodyParser.urlencoded({ extended: true })); // Setup the body parser to handle form submits
 app.use(session({ secret: "super-secret" })); // Session setup
 
-// Error Handling: Missing Params, Authorized users and DB Query
+// Error Handling: Missing Params, Authorized users, DB Query, JWT sign
 // TODO DB Query Error Handling
 // TODO catchasyncerror wrapper
 // TODO Protected Route
 // TODO Got token -> Sessionislogged on
 // TODO Send JWT in cookies
+// TODO Add expiry and refresh token
 
 /** Handle login display and form submit */
 app.post("/login", (req, res) => {
@@ -36,11 +38,19 @@ app.post("/login", (req, res) => {
         "SELECT * FROM useraccounts WHERE username = ?",
         [username],
         function (err, results) {
-          const { username: dbUser, password: dbPass } = results[0];
+          const {
+            username: dbUser,
+            password: dbPass,
+            usergroup: dbUsergroup,
+          } = results[0];
           bcrypt.compare(pwd, dbPass, function (err, isMatch) {
             if (isMatch) {
-              // store username in token
-              var token = jwt.sign({ data: dbUser }, process.env.JWT_SECRET);
+              // store username and usergroup in token
+              var token = jwt.sign(
+                { username: dbUser, usergroup: dbUsergroup },
+                process.env.JWT_SECRET
+                //{ expiresIn: "1m" }
+              );
               // results[0].token = token;
               // res.send(results);
               res.status(200).json({
@@ -90,7 +100,7 @@ app.post("/register", (req, res) => {
 });
 
 /** Full update based on username, instead of patch (partial) */
-app.put("/users", (req, res) => {
+app.put("/users", verifyToken, (req, res) => {
   let { username, password, email, usergroup, myusergroup } = req.body;
   console.log("update user", req.body);
 
@@ -149,7 +159,7 @@ app.put("/users", (req, res) => {
 });
 
 /** Admin view all users*/
-app.post("/users", (req, res) => {
+app.post("/users", verifyToken, (req, res) => {
   let { myusergroup } = req.body;
 
   // Find all users
@@ -164,12 +174,12 @@ app.post("/users", (req, res) => {
   if (myusergroup === "admin") {
     getAllUser();
   } else {
-    return res.status(401).end("User is not authorized"); // not authorized
+    return res.status(403).end("User is not authorized to access  "); // not authorized
   }
 });
 
 /** Admin can find other user by id, other user can only view their own user id*/
-app.post("/user", (req, res) => {
+app.post("/user", verifyToken, (req, res) => {
   let { username, myusergroup, myusername } = req.body;
 
   // find user by username
