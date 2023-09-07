@@ -23,6 +23,7 @@ app.use(session({ secret: "super-secret" })); // Session setup
 // TODO catchasyncerror wrapper
 // TODO Protected Route
 // TODO Got token -> Sessionislogged on
+// TODO Send JWT in cookies
 
 /** Handle login display and form submit */
 app.post("/login", (req, res) => {
@@ -167,9 +168,9 @@ app.post("/users", (req, res) => {
   }
 });
 
-/** Admin find user by id */
+/** Admin can find other user by id, other user can only view their own user id*/
 app.post("/user", (req, res) => {
-  let { username, myusergroup } = req.body;
+  let { username, myusergroup, myusername } = req.body;
 
   // find user by username
   let getUserById = async (username2) => {
@@ -183,15 +184,23 @@ app.post("/user", (req, res) => {
     );
   };
 
-  // check if the user doing the updating is admin
-  if (myusergroup === "admin") {
+  // check if there is usergroup and if usergroup is admin or user
+  if (!myusergroup) {
+    return res.status(401).end("User is not authorized"); // not authorized
+  } else if (myusergroup === "admin") {
+    // admin find other user details
     if (username) {
       getUserById(username);
     } else {
       res.status(404).end("Invalid Request due to missing parameters");
     }
   } else {
-    return res.status(401).end("User is not authorized"); // not authorized
+    // search own user details
+    if (myusername) {
+      getUserById(myusername);
+    } else {
+      res.status(404).end("Invalid Request due to missing parameters");
+    }
   }
 });
 
@@ -242,10 +251,6 @@ app.post("/user", (req, res) => {
 //   } else {
 //     res.redirect("/login?redirect_url=/account");
 //   }
-// });
-
-// app.get("/contact", (req, res) => {
-//   res.send("Our address : 321 Main Street, Beverly Hills.");
 // });
 
 /** App listening on port */
