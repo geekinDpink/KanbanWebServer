@@ -18,7 +18,9 @@ const port = config.port;
 app.use(bodyParser.urlencoded({ extended: true })); // Setup the body parser to handle form submits
 app.use(session({ secret: "super-secret" })); // Session setup
 
-// TODO catchasyncerror
+// Error Handling: Missing Params, Authorized users and DB Query
+// TODO DB Query Error Handling
+// TODO catchasyncerror wrapper
 // TODO Protected Route
 // TODO Got token -> Sessionislogged on
 
@@ -50,18 +52,19 @@ app.post("/login", (req, res) => {
       );
     };
     findUser(username, password);
+  } else {
+    res.status(404).end("Invalid Request due to missing parameters");
   }
 });
 
-//Todo
+// Todo handle email empty
 /** Handle user creation */
 app.post("/register", (req, res) => {
-  // with placeholder
   let { username, password, email, usergroup } = req.body;
   console.log("register", req.body);
 
-  if (username && password) {
-    // hash password and save to db
+  if (username && password && usergroup) {
+    // Create new user
     let registerNewUser = async (
       pwd,
       saltRnd,
@@ -80,12 +83,13 @@ app.post("/register", (req, res) => {
       );
     };
     registerNewUser(password, saltRounds, username, email, usergroup);
+  } else {
+    res.status(404).end("Invalid Request due to missing parameters");
   }
 });
 
 /** Full update based on username, instead of patch (partial) */
 app.put("/users", (req, res) => {
-  // with placeholder
   let { username, password, email, usergroup, myusergroup } = req.body;
   console.log("update user", req.body);
 
@@ -124,10 +128,22 @@ app.put("/users", (req, res) => {
   };
 
   // check if the user doing the updating is admin
-  if (myusergroup === "admin") {
-    updateUserAllDetails(password, saltRounds, email, usergroup, username);
+  if (!myusergroup) {
+    res.status(404).end("Invalid Request due to missing parameters");
+  } else if (myusergroup === "admin") {
+    // only admin can update usergroup
+    if (password && saltRounds && email && usergroup && username) {
+      updateUserAllDetails(password, saltRounds, email, usergroup, username);
+    } else {
+      res.status(404).end("Invalid Request due to missing parameters");
+    }
   } else {
-    updateUserDetails(password, saltRounds, email2, username2);
+    // myusergroup is not admin; dev, pm or pl
+    if (password && saltRounds && email && username) {
+      updateUserDetails(password, saltRounds, email, usergroup, username);
+    } else {
+      res.status(404).end("Invalid Request due to missing parameters");
+    }
   }
 });
 
@@ -146,7 +162,6 @@ app.post("/users", (req, res) => {
   // check if the user doing the updating is admin
   if (myusergroup === "admin") {
     getAllUser();
-    console.log("isAdmin");
   } else {
     return res.status(401).end("User is not authorized"); // not authorized
   }
@@ -170,8 +185,11 @@ app.post("/user", (req, res) => {
 
   // check if the user doing the updating is admin
   if (myusergroup === "admin") {
-    getUserById(username);
-    console.log("isAdmin");
+    if (username) {
+      getUserById(username);
+    } else {
+      res.status(404).end("Invalid Request due to missing parameters");
+    }
   } else {
     return res.status(401).end("User is not authorized"); // not authorized
   }
