@@ -5,6 +5,8 @@ const bcrypt = require("bcrypt");
 const connection = require("./config/dbConfig");
 const config = require("./config/config");
 const jwt = require("jsonwebtoken");
+const cors = require("cors");
+
 const { verifyToken } = require("./middleware/auth");
 
 require("dotenv").config();
@@ -13,6 +15,7 @@ const saltRounds = config.saltRound; // return int as string
 
 const app = express();
 app.use(express.json());
+app.use(cors());
 const port = config.port;
 
 // Inititalize the app and add middleware
@@ -49,7 +52,7 @@ app.post("/login", (req, res) => {
               if (isMatch) {
                 // store username and usergroup in token
                 var token = jwt.sign(
-                  { username: dbUser, usergroup: dbUsergroup },
+                  { username: dbUser },
                   process.env.JWT_SECRET
                   //{ expiresIn: "1m" }
                 );
