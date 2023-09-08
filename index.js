@@ -19,7 +19,7 @@ const port = config.port;
 app.use(bodyParser.urlencoded({ extended: true })); // Setup the body parser to handle form submits
 app.use(session({ secret: "super-secret" })); // Session setup
 
-// Error Handling: Missing Params, Authorized users, DB Query, JWT sign
+// Error Handling: Missing Params - 400, Authorized users, DB Query error [test case: wrong dbconfig] - 500, JWT sign
 // TODO DB Query Error Handling
 // TODO catchasyncerror wrapper
 // TODO Got token -> Sessionislogged on
@@ -31,37 +31,41 @@ app.post("/login", (req, res) => {
   let { username, password } = req.body;
 
   if (username && password) {
-    let findUser = async (username, pwd) => {
+    let findUser = async (username, pwd, res) => {
       // check if password matches db hash password and generate jwt as token {status, token}
       connection.query(
         "SELECT * FROM useraccounts WHERE username = ?",
         [username],
         function (err, results) {
-          const {
-            username: dbUser,
-            password: dbPass,
-            usergroup: dbUsergroup,
-          } = results[0];
-          bcrypt.compare(pwd, dbPass, function (err, isMatch) {
-            if (isMatch) {
-              // store username and usergroup in token
-              var token = jwt.sign(
-                { username: dbUser, usergroup: dbUsergroup },
-                process.env.JWT_SECRET
-                //{ expiresIn: "1m" }
-              );
-              // results[0].token = token;
-              // res.send(results);
-              res.status(200).json({
-                status: "success",
-                token: token,
-              });
-            }
-          });
+          if (err) {
+            res.status(500).json(err);
+          } else {
+            const {
+              username: dbUser,
+              password: dbPass,
+              usergroup: dbUsergroup,
+            } = results[0];
+            bcrypt.compare(pwd, dbPass, function (err, isMatch) {
+              if (isMatch) {
+                // store username and usergroup in token
+                var token = jwt.sign(
+                  { username: dbUser, usergroup: dbUsergroup },
+                  process.env.JWT_SECRET
+                  //{ expiresIn: "1m" }
+                );
+                // results[0].token = token;
+                // res.send(results);
+                res.status(200).json({
+                  status: "success",
+                  token: token,
+                });
+              }
+            });
+          }
         }
       );
     };
-    findUser(username, password);
+    findUser(username, password, res);
   } else {
     res.status(404).end("Invalid Request due to missing parameters");
   }
@@ -80,19 +84,23 @@ app.post("/register", (req, res) => {
       saltRnd,
       username2,
       email2,
-      usergroup2
+      usergroup2,
+      res
     ) => {
       let hashpwd = await bcrypt.hash(pwd, saltRnd);
       connection.query(
         "INSERT INTO useraccounts (username, password, email, usergroup, active) VALUES (?,?,?,?,?)",
         [username2, hashpwd, email2, usergroup2, true],
         function (err, results) {
-          res.send(results);
-          console.log(err);
+          if (err) {
+            res.status(500).json(err);
+          } else {
+            res.send(results);
+          }
         }
       );
     };
-    registerNewUser(password, saltRounds, username, email, usergroup);
+    registerNewUser(password, saltRounds, username, email, usergroup, res);
   } else {
     res.status(404).end("Invalid Request due to missing parameters");
   }
@@ -109,7 +117,8 @@ app.put("/users", verifyToken, (req, res) => {
     saltRnd,
     email2,
     usergroup2,
-    username2
+    username2,
+    res
   ) => {
     // hash password and save to db
     let hashpwd = await bcrypt.hash(pwd, saltRnd);
@@ -117,22 +126,28 @@ app.put("/users", verifyToken, (req, res) => {
       "UPDATE kanban.useraccounts SET password = ?, email = ?, usergroup = ?, active = ? WHERE username = ?",
       [hashpwd, email2, usergroup2, true, username2],
       function (err, results) {
-        res.send(results);
-        console.log(err);
+        if (err) {
+          res.status(500).json(err);
+        } else {
+          res.send(results);
+        }
       }
     );
   };
 
   // for user, update only the email and pass
-  let updateUserDetails = async (pwd, saltRnd, email2, username2) => {
+  let updateUserDetails = async (pwd, saltRnd, email2, username2, res) => {
     // hash password and save to db
     let hashpwd = await bcrypt.hash(pwd, saltRnd);
     connection.query(
       "UPDATE kanban.useraccounts SET password = ?, email = ? WHERE username = ?",
-      [hashpwd, email, username],
+      [hashpwd, email2, username2],
       function (err, results) {
-        res.send(results);
-        console.log(err);
+        if (err) {
+          res.status(500).json(err);
+        } else {
+          res.send(results);
+        }
       }
     );
   };
@@ -143,14 +158,21 @@ app.put("/users", verifyToken, (req, res) => {
   } else if (myusergroup === "admin") {
     // only admin can update usergroup
     if (password && saltRounds && email && usergroup && username) {
-      updateUserAllDetails(password, saltRounds, email, usergroup, username);
+      updateUserAllDetails(
+        password,
+        saltRounds,
+        email,
+        usergroup,
+        username,
+        res
+      );
     } else {
       res.status(404).end("Invalid Request due to missing parameters");
     }
   } else {
     // myusergroup is not admin; dev, pm or pl
     if (password && saltRounds && email && username) {
-      updateUserDetails(password, saltRounds, email, usergroup, username);
+      updateUserDetails(password, saltRounds, email, usergroup, username, res);
     } else {
       res.status(404).end("Invalid Request due to missing parameters");
     }
@@ -162,16 +184,19 @@ app.post("/users", verifyToken, (req, res) => {
   let { myusergroup } = req.body;
 
   // Find all users
-  let getAllUser = async () => {
+  let getAllUser = (res) => {
     connection.query("SELECT * FROM useraccounts", function (err, results) {
-      res.send(results);
-      console.log(err);
+      if (err) {
+        res.status(500).json(err);
+      } else {
+        res.send(results);
+      }
     });
   };
 
   // check if the user doing the updating is admin
   if (myusergroup === "admin") {
-    getAllUser();
+    getAllUser(res);
   } else {
     return res.status(403).end("User is not authorized to access  "); // not authorized
   }
@@ -182,13 +207,16 @@ app.post("/user", verifyToken, (req, res) => {
   let { username, myusergroup, myusername } = req.body;
 
   // find user by username
-  let getUserById = async (username2) => {
+  let getUserById = async (username2, res) => {
     connection.query(
       "SELECT * FROM useraccounts WHERE username = ?",
       [username2],
       function (err, results) {
-        res.send(results);
-        console.log(err);
+        if (err) {
+          res.status(500).json(err);
+        } else {
+          res.send(results);
+        }
       }
     );
   };
@@ -199,14 +227,14 @@ app.post("/user", verifyToken, (req, res) => {
   } else if (myusergroup === "admin") {
     // admin find other user details
     if (username) {
-      getUserById(username);
+      getUserById(username, res);
     } else {
       res.status(404).end("Invalid Request due to missing parameters");
     }
   } else {
     // search own user details
     if (myusername) {
-      getUserById(myusername);
+      getUserById(myusername, res);
     } else {
       res.status(404).end("Invalid Request due to missing parameters");
     }
@@ -216,56 +244,18 @@ app.post("/user", verifyToken, (req, res) => {
 /** Get all usergroups*/
 app.get("/usergroups", verifyToken, (req, res) => {
   // find user by username
-  let getAllUserGroups = async () => {
+  let getAllUserGroups = (res) => {
     connection.query("SELECT * FROM usergroups", function (err, results) {
-      res.send(results);
-      console.log(err);
+      if (err) {
+        res.status(500).json(err);
+      } else {
+        res.send(results);
+      }
     });
   };
 
-  getAllUserGroups();
+  getAllUserGroups(res);
 });
-
-/** For testing */
-// app.get("/login", (req, res) => {
-//   // with placeholder
-//   connection.query(
-//     "SELECT * FROM useraccounts",
-//     ["username", "password"],
-//     function (err, results) {
-//       res.send(results);
-//     }
-//   );
-// });
-
-// app.post("/login", (req, res) => {
-//   const { username, password } = req.body;
-//   if (username === "bob" && password === "1234") {
-//     req.session.isLoggedIn = true;
-//     res.redirect(req.query.redirect_url ? req.query.redirect_url : "/");
-//   } else {
-//     res.render("login", { error: "Username or password is incorrect" });
-//   }
-// });
-
-// /** Handle logout function */
-// app.get("/logout", (req, res) => {
-//   req.session.isLoggedIn = false;
-//   res.redirect("/");
-// });
-
-// /** Simulated bank functionality */
-// app.get("/", (req, res) => {
-//   res.render("index", { isLoggedIn: req.session.isLoggedIn });
-// });
-
-// app.get("/balance", (req, res) => {
-//   if (req.session.isLoggedIn === true) {
-//     res.send("Your account balance is $1234.52");
-//   } else {
-//     res.redirect("/login?redirect_url=/balance");
-//   }
-// });
 
 // app.get("/account", (req, res) => {
 //   if (req.session.isLoggedIn === true) {
