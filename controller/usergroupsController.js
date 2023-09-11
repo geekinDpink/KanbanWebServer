@@ -1,22 +1,33 @@
-/*
-Not in use yet
-Not tested
-*/
-const bcrypt = require("bcrypt");
-const connection = require("./config/dbConfig");
-const jwt = require("jsonwebtoken");
+const connection = require("../config/dbConfig");
 
-require("dotenv").config();
+// exports.usergroupsController = {
+//   getAllUserGroups: (req, res, next) => {
+//     let getAllUserGroups = (res) => {
+//       connection.query("SELECT * FROM usergroups", function (err, results) {
+//         if (err) {
+//           res.status(500).json(err);
+//         } else {
+//           res.send(results);
+//         }
+//       });
+//     };
+//     res.status(500).json({
+//       success: true,
+//       data: getAllUserGroups(res),
+//     });
+//   },
+// };
 
-const getAllUserGroups = async () => {
+const getAllUserGroups = (req, res, next) => {
   connection.query("SELECT * FROM usergroups", function (err, results) {
-    res.send(results);
-    console.log(err);
+    if (err) {
+      res.status(500).json(err);
+    } else {
+      res.status(200).send(results);
+    }
   });
 };
 
-const userGroupControllers = {
-  getAllUserGroups,
+exports.usergroupsController = {
+  getAllUserGroups: getAllUserGroups,
 };
-
-module.exports = userGroupControllers;
