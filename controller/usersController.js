@@ -5,6 +5,7 @@ const config = require("../config/config");
 
 const saltRounds = config.saltRound; // return int as string
 
+// for login, find user
 const findUser = (req, res, next) => {
   let { username, password } = req.body;
 
@@ -46,7 +47,7 @@ const findUser = (req, res, next) => {
   }
 };
 
-// Create new user
+// Create new user + async to wait for encryption of password
 const registerNewUser = async (req, res, next) => {
   let { username, password, email, usergroup } = req.body;
   console.log("register", req.body);
@@ -107,6 +108,7 @@ const getAllUser = (req, res, next) => {
   }
 };
 
+// Admin can find any user details but user can only view their details
 const getUserById = (req, res, next) => {
   let { username, myusergroup, myusername } = req.body;
 

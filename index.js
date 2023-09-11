@@ -37,7 +37,7 @@ app.listen(port, () => {
   console.log(`Kanban Web Server listening at http://localhost:${port}`);
 });
 
-/** V1 - Get all usergroups with router in the same file*/
+/** V1 - Using Router.htmlrequest() in the same file*/
 // let getUserGrps = router.get("/usergroups", (req, res) => {
 //   // find user by username
 //   let getAllUserGroups = (res) => {
@@ -51,10 +51,9 @@ app.listen(port, () => {
 //   };
 //   getAllUserGroups(res);
 // });
-
 // app.use(getUserGrps);
 
-/*V2 - Router.route and app.use*/
+/*V2 - Using Router.route and app.use in the same file*/
 // const getAllUserGroups = (req, res, next) => {
 //   let getAllUserGroups = (res) => {
 //     connection.query("SELECT * FROM usergroups", function (err, results) {
@@ -72,7 +71,7 @@ app.listen(port, () => {
 
 // router.route("/usergroups").get(getAllUserGroups);
 
-/*V3 route same file*/
+/*V3 Refactoring the middleware*/
 // router.route("/food").get((req, res, next) => {
 //   connection.query("SELECT * FROM usergroups", function (err, results) {
 //     if (err) {
