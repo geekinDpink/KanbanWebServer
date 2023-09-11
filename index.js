@@ -20,11 +20,13 @@ app.use(bodyParser.urlencoded({ extended: true })); // Setup the body parser to 
 
 router.route("/login").post(usersController.findUser);
 router.route("/register").post(usersController.registerNewUser);
-router.route("/users").put(usersController.updateUserAllDetails);
-router.route("/users").post(usersController.getAllUser);
-router.route("/user").post(usersController.getUserById);
+router.route("/users").put(verifyToken, usersController.updateUserAllDetails);
+router.route("/users").post(verifyToken, usersController.getAllUser);
+router.route("/user").post(verifyToken, usersController.getUserById);
 
-router.route("/usergroups").get(usergroupsController.getAllUserGroups);
+router
+  .route("/usergroups")
+  .get(verifyToken, usergroupsController.getAllUserGroups);
 
 app.use(router);
 
