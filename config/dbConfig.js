@@ -8,4 +8,15 @@ const connection = mysql.createConnection({
   database: "kanban",
 });
 
-module.exports = connection;
+const dbQuery = (sql, queryArr) => {
+  return new Promise((resolve, reject) => {
+    connection.query(sql, queryArr, (error, results) => {
+      if (error) {
+        return reject(error);
+      }
+      return resolve(results);
+    });
+  });
+};
+
+module.exports = { connection: connection, dbQuery: dbQuery };

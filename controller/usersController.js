@@ -1,9 +1,45 @@
-const connection = require("../config/dbConfig");
+const { connection, dbQuery } = require("../config/dbConfig");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const config = require("../config/config");
 
 const saltRounds = config.saltRound; // return int as string
+
+const findUser2 = async (req, res, next) => {
+  const { username, password } = req.body;
+  const sql = "SELECT * FROM useraccounts WHERE username = ?";
+  const queryArr = [username];
+
+  try {
+    const results = await dbQuery(sql, queryArr);
+
+    const {
+      username: dbUser,
+      password: dbPass,
+      usergroup: dbUsergroup,
+    } = results[0];
+
+    const isMatch = await bcrypt.compare(password, dbPass);
+
+    if (isMatch) {
+      // store username and usergroup in token
+      var token = jwt.sign(
+        { username: dbUser },
+        process.env.JWT_SECRET
+        //{ expiresIn: "1m" }
+      );
+      // results[0].token = token;
+      // res.send(results);
+      res.status(200).json({
+        status: "success",
+        token: token,
+      });
+    }
+  } catch (e) {
+    console.log(e);
+    res.sendStatus(500);
+  }
+};
 
 // for login, find user
 const findUser = (req, res, next) => {
@@ -205,12 +241,93 @@ const getUserById = (req, res, next) => {
 };
 
 exports.usersController = {
-  findUser: findUser,
+  findUser: findUser2,
   registerNewUser: registerNewUser,
   updateUserDetails: updateUserDetails,
   getAllUser: getAllUser,
   getUserById: getUserById,
 };
+
+const findUser4 = async (req, res, next) => {
+  let { username, password } = req.body;
+
+  const dbQuery = (sql, queryArr) => {
+    return new Promise((resolve, reject) => {
+      connection.query(sql, queryArr, (error, results) => {
+        if (error) {
+          return reject(error);
+        }
+        return resolve(results);
+      });
+    });
+  };
+
+  const sql = "SELECT * FROM useraccounts WHERE username = ?";
+  const queryArr = [username];
+
+  try {
+    const results = await dbQuery(sql, queryArr);
+    res.status(200).json({ results: results }); // send a json response
+  } catch (e) {
+    console.log(e); // console log the error so we can see it in the console
+    res.sendStatus(500);
+  }
+};
+
+/* Template for connection query*/
+// const findUser4 = async (req, res, next) => {
+//   let { username, password } = req.body;
+
+//   const dbQuery = (sql, queryArr) => {
+//     return new Promise((resolve, reject) => {
+//       connection.query(sql, queryArr, (error, results) => {
+//         if (error) {
+//           return reject(error);
+//         }
+//         return resolve(results);
+//       });
+//     });
+//   };
+
+//   const sql = "SELECT * FROM useraccounts WHERE username = ?";
+//   const queryArr = [username];
+
+//   try {
+//     const results = await dbQuery(sql, queryArr);
+//     res.status(200).json({ results: results }); // send a json response
+//   } catch (e) {
+//     console.log(e); // console log the error so we can see it in the console
+//     res.sendStatus(500);
+//   }
+// };
+
+/* precusor to template */
+// const findUser3 = async (req, res, next) => {
+//   let { username, password } = req.body;
+
+//   const dbQuery = () => {
+//     return new Promise((resolve, reject) => {
+//       connection.query(
+//         "SELECT * FROM useraccounts WHERE username = ?",
+//         [username],
+//         (error, results) => {
+//           if (error) {
+//             return reject(error);
+//           }
+//           return resolve(results);
+//         }
+//       );
+//     });
+//   };
+
+//   try {
+//     const results = await dbQuery();
+//     res.status(200).json({ elements: results }); // send a json response
+//   } catch (e) {
+//     console.log(e); // console log the error so we can see it in the console
+//     res.sendStatus(500);
+//   }
+// };
 
 // const findUser = (req, res, next) => {
 //   let { username, password } = req.body;
