@@ -71,7 +71,7 @@ const findUser = async (req, res, next) => {
 // Create new user + async to wait for encryption of password
 ////////////////////////////////////////////////////////////////
 const registerNewUser = async (req, res, next) => {
-  let { username, password, email, usergroup, isAdmin } = req.body;
+  let { username, password, email, usergroup } = req.body;
   console.log("register", req.body);
 
   if (username && password && usergroup) {
@@ -79,8 +79,8 @@ const registerNewUser = async (req, res, next) => {
 
     try {
       const sql =
-        "INSERT INTO useraccounts (username, password, email, usergroup, isAdmin, active) VALUES (?,?,?,?,?,?)";
-      const queryArr = [username, hashpwd, email, usergroup, isAdmin, true];
+        "INSERT INTO useraccounts (username, password, email, usergroup, active) VALUES (?,?,?,?,?)";
+      const queryArr = [username, hashpwd, email, usergroup, true];
 
       // save record to db. DB rule disallowed duplicate username/email.
       const results = await dbQuery(sql, queryArr);
@@ -98,7 +98,7 @@ const registerNewUser = async (req, res, next) => {
 ////////////////////////////////////////////////////////////////
 const updateUserDetails = async (req, res, next) => {
   // Todo: isAdmin must refer to the person who changed it, based on the token search
-  let { username, password, email, usergroup, isAdmin, active } = req.body;
+  let { username, password, email, usergroup, active } = req.body;
   console.log("update user", req.body);
 
   // for admin, update all fields
@@ -108,7 +108,6 @@ const updateUserDetails = async (req, res, next) => {
     email2,
     usergroup2,
     username2,
-    isAdmin2,
     active2,
     res
   ) => {
@@ -118,15 +117,8 @@ const updateUserDetails = async (req, res, next) => {
     // TODO need to catch username not valid
     try {
       const sql =
-        "UPDATE kanban.useraccounts SET password = ?, email = ?, usergroup = ?, isAdmin = ?, active = ? WHERE username = ?";
-      const queryArr = [
-        hashpwd,
-        email2,
-        usergroup2,
-        isAdmin2,
-        active2,
-        username2,
-      ];
+        "UPDATE kanban.useraccounts SET password = ?, email = ?, usergroup = ?, active = ? WHERE username = ?";
+      const queryArr = [hashpwd, email2, usergroup2, active2, username2];
       const results = await dbQuery(sql, queryArr);
       res.status(200).send(results);
     } catch (error) {
@@ -150,9 +142,9 @@ const updateUserDetails = async (req, res, next) => {
     }
   };
 
-  if (isAdmin) {
+  if (usergroup === "admin") {
     // only admin can update usergroup
-    if (password && saltRounds && email && usergroup && username && isAdmin) {
+    if (password && saltRounds && email && usergroup && username) {
       console.log("update by admin");
       updateAllFields(
         password,
@@ -160,7 +152,6 @@ const updateUserDetails = async (req, res, next) => {
         email,
         usergroup,
         username,
-        isAdmin,
         active,
         res
       );
@@ -183,10 +174,10 @@ const updateUserDetails = async (req, res, next) => {
 ////////////////////////////////////////////////////////////////
 const getAllUser = async (req, res, next) => {
   // Todo: isAdmin must refer to the person who changed it, based on the token search
-  let { isAdmin } = req.body;
+  let { usergroup } = req.body;
 
   // check if the user doing the updating is admin
-  if (isAdmin) {
+  if (usergroup === "admin") {
     try {
       const sql = "SELECT * FROM useraccounts";
       const queryArr = [];
@@ -204,7 +195,7 @@ const getAllUser = async (req, res, next) => {
 // Admin can find any user details but user can only view their details
 ////////////////////////////////////////////////////////////////
 const getUserById = async (req, res, next) => {
-  let { username, isAdmin, myusername } = req.body;
+  let { username, usergroup, myusername } = req.body;
 
   // find user by username
   let queryDBUserById = async (username2, res) => {
@@ -219,7 +210,7 @@ const getUserById = async (req, res, next) => {
   };
 
   // admin find other user details
-  if (isAdmin === true) {
+  if (usergroup === "admin") {
     if (username) {
       queryDBUserById(username, res);
     } else {
