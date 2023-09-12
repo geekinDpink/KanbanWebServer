@@ -1,4 +1,4 @@
-const connection = require("../config/dbConfig");
+const { dbQuery } = require("../config/dbConfig");
 
 // exports.usergroupsController = {
 //   getAllUserGroups: (req, res, next) => {
@@ -18,14 +18,15 @@ const connection = require("../config/dbConfig");
 //   },
 // };
 
-const getAllUserGroups = (req, res, next) => {
-  connection.query("SELECT * FROM usergroups", function (err, results) {
-    if (err) {
-      res.status(500).json(err);
-    } else {
-      res.status(200).send(results);
-    }
-  });
+const getAllUserGroups = async (req, res, next) => {
+  try {
+    const sql = "SELECT * FROM usergroups";
+    const queryArr = [];
+    const results = await dbQuery(sql, queryArr);
+    res.status(200).send(results);
+  } catch (error) {
+    res.status(500).json(error);
+  }
 };
 
 exports.usergroupsController = {

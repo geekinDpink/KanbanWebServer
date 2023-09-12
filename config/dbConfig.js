@@ -19,4 +19,4 @@ const dbQuery = (sql, queryArr) => {
   });
 };
 
-module.exports = { connection: connection, dbQuery: dbQuery };
+module.exports = { dbQuery: dbQuery };
