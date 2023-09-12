@@ -4,7 +4,7 @@ const bodyParser = require("body-parser");
 const config = require("./config/config");
 const cors = require("cors");
 
-const { verifyToken } = require("./middleware/auth");
+const { verifyToken, getRole } = require("./middleware/auth");
 const { usergroupsController } = require("./controller/usergroupsController");
 const { usersController } = require("./controller/usersController");
 
