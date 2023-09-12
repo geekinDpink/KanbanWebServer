@@ -4,7 +4,7 @@ const bodyParser = require("body-parser");
 const config = require("./config/config");
 const cors = require("cors");
 
-const { verifyToken, getRole } = require("./middleware/auth");
+const { verifyToken, getCurrUserGroup } = require("./middleware/auth");
 const { usergroupsController } = require("./controller/usergroupsController");
 const { usersController } = require("./controller/usersController");
 
@@ -20,9 +20,15 @@ app.use(bodyParser.urlencoded({ extended: true })); // Setup the body parser to 
 
 router.route("/login").post(usersController.findUser);
 router.route("/register").post(verifyToken, usersController.registerNewUser);
-router.route("/users").put(verifyToken, usersController.updateUserDetails);
-router.route("/users").post(verifyToken, usersController.getAllUser);
-router.route("/user").post(verifyToken, usersController.getUserById);
+router
+  .route("/users")
+  .put(verifyToken, getCurrUserGroup, usersController.updateUserDetails);
+router
+  .route("/users")
+  .post(verifyToken, getCurrUserGroup, usersController.getAllUser);
+router
+  .route("/user")
+  .post(verifyToken, getCurrUserGroup, usersController.getUserById);
 router
   .route("/usergroups")
   .get(verifyToken, usergroupsController.getAllUserGroups);

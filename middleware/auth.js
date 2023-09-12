@@ -3,7 +3,9 @@ const { dbQuery } = require("../config/dbConfig");
 
 require("dotenv").config();
 
-// ensure token is valid
+//////////////////////////////////
+// Two Part Midware - ensure token is valid and to add username from token to req
+//////////////////////////////////
 const verifyToken = (req, res, next) => {
   const authHeader = req.headers.authorization;
 
@@ -13,7 +15,7 @@ const verifyToken = (req, res, next) => {
       if (err) {
         return res.sendStatus(403).send("Invalid Token");
       }
-      req.currentUser = { currUsername: user.username };
+      req.currentUser = { currentUsername: user.username };
       next();
     });
   } else {
@@ -21,9 +23,11 @@ const verifyToken = (req, res, next) => {
   }
 };
 
-// get current user group
-const getRole = async (req, res, next) => {
-  const username = req.currentUser.currUsername;
+//////////////////////////////////
+// Two Part Midware - get username from req of previous midware and find usergroup, then pass to http req
+//////////////////////////////////
+const getCurrUserGroup = async (req, res, next) => {
+  const username = req.currentUser.currentUsername;
   const sql = "SELECT usergroup FROM useraccounts WHERE username = ?";
   const queryArr = [username];
 
@@ -32,7 +36,7 @@ const getRole = async (req, res, next) => {
 
     req.currentUser = {
       ...req.currentUser,
-      currUsergroup: results[0].usergroup,
+      currentUserGroup: results[0].usergroup,
     };
     next();
     // const { username: dbUser, password: dbPass, active: dbActive } = results[0];
@@ -43,7 +47,7 @@ const getRole = async (req, res, next) => {
 
 const auth = {
   verifyToken,
-  getRole,
+  getCurrUserGroup,
 };
 
 module.exports = auth;

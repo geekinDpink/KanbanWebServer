@@ -1,4 +1,4 @@
-const { connection, dbQuery } = require("../config/dbConfig");
+const { dbQuery } = require("../config/dbConfig");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const config = require("../config/config");
@@ -98,8 +98,9 @@ const registerNewUser = async (req, res, next) => {
 ////////////////////////////////////////////////////////////////
 const updateUserDetails = async (req, res, next) => {
   // Todo: isAdmin must refer to the person who changed it, based on the token search
-  let { username, password, email, usergroup, active } = req.body;
-  console.log("update user", req.body);
+  const { username, password, email, usergroup, active } = req.body;
+  const { currentUsername: myUsername, currentUserGroup: myUserGroup } =
+    req.currentUser;
 
   // for admin, update all fields
   let updateAllFields = async (
@@ -142,7 +143,7 @@ const updateUserDetails = async (req, res, next) => {
     }
   };
 
-  if (usergroup === "admin") {
+  if (myUserGroup === "admin") {
     // only admin can update usergroup
     if (password && saltRounds && email && usergroup && username) {
       console.log("update by admin");
@@ -159,10 +160,9 @@ const updateUserDetails = async (req, res, next) => {
       res.status(404).end("Invalid Request due to missing parameters");
     }
   } else {
-    // user can only update his own password and email
-    if (password && saltRounds && email && username) {
-      console.log("update by user");
-      updateCertainFields(password, saltRounds, email, username, res);
+    // user can only update his own password and email, so use myUsername instead of username from req body
+    if (password && saltRounds && email && myUsername) {
+      updateCertainFields(password, saltRounds, email, myUsername, res);
     } else {
       res.status(404).end("Invalid Request due to missing parameters");
     }
@@ -173,11 +173,10 @@ const updateUserDetails = async (req, res, next) => {
 // Find all users
 ////////////////////////////////////////////////////////////////
 const getAllUser = async (req, res, next) => {
-  // Todo: isAdmin must refer to the person who changed it, based on the token search
-  let { usergroup } = req.body;
+  let { currentUserGroup: myUserGroup } = req.currentUser;
 
   // check if the user doing the updating is admin
-  if (usergroup === "admin") {
+  if (myUserGroup === "admin") {
     try {
       const sql = "SELECT * FROM useraccounts";
       const queryArr = [];
@@ -195,7 +194,9 @@ const getAllUser = async (req, res, next) => {
 // Admin can find any user details but user can only view their details
 ////////////////////////////////////////////////////////////////
 const getUserById = async (req, res, next) => {
-  let { username, usergroup, myusername } = req.body;
+  const { username } = req.body;
+  const { currentUsername: myUsername, currentUserGroup: myUserGroup } =
+    req.currentUser;
 
   // find user by username
   let queryDBUserById = async (username2, res) => {
@@ -210,7 +211,7 @@ const getUserById = async (req, res, next) => {
   };
 
   // admin find other user details
-  if (usergroup === "admin") {
+  if (myUserGroup === "admin") {
     if (username) {
       queryDBUserById(username, res);
     } else {
@@ -219,8 +220,8 @@ const getUserById = async (req, res, next) => {
   }
   // user can only search their own details
   else {
-    if (myusername) {
-      queryDBUserById(myusername, res);
+    if (myUsername) {
+      queryDBUserById(myUsername, res);
     } else {
       res.status(404).send("Invalid Request due to missing parameters");
     }
