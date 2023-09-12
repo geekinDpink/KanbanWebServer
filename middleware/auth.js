@@ -6,16 +6,15 @@ const verifyToken = (req, res, next) => {
 
   if (authHeader) {
     const token = authHeader.split(" ")[1];
-
     jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
       if (err) {
-        return res.sendStatus(403).end("Invalid Token");
+        return res.sendStatus(403).send("Invalid Token");
       }
       req.user = user;
       next();
     });
   } else {
-    res.sendStatus(401).end("Missing Token");
+    res.sendStatus(401).send("Missing Token");
   }
 };
 

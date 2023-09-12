@@ -19,7 +19,7 @@ app.use(cors());
 app.use(bodyParser.urlencoded({ extended: true })); // Setup the body parser to handle form submits
 
 router.route("/login").post(usersController.findUser);
-router.route("/register").post(usersController.registerNewUser);
+router.route("/register").post(verifyToken, usersController.registerNewUser);
 router.route("/users").put(verifyToken, usersController.updateUserDetails);
 router.route("/users").post(verifyToken, usersController.getAllUser);
 router.route("/user").post(verifyToken, usersController.getUserById);
