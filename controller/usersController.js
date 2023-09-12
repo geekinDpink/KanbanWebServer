@@ -18,6 +18,7 @@ const findUser = async (req, res, next) => {
 
     const { username: dbUser, password: dbPass, active: dbActive } = results[0];
 
+    // issue token only to active user, token undefined for inactive user; undefined will be omitted from res
     if (dbActive) {
       // check if password match with db password which is hashed
       const isMatch = await bcrypt.compare(password, dbPass);
@@ -38,12 +39,14 @@ const findUser = async (req, res, next) => {
       } else {
         res.status(404).json({
           status: "fail",
-          message: "Password does not match",
+          token: undefined,
+          remarks: "Password does not match",
         });
       }
     } else {
-      res.json({
+      res.status(403).json({
         status: "fail",
+        token: undefined,
         remarks: "Inactive user",
       });
     }
@@ -51,6 +54,7 @@ const findUser = async (req, res, next) => {
     console.log(error);
     res.json({
       status: "fail",
+      token: undefined,
       remarks: "Error with database server transaction/connections",
       error: error,
     });
