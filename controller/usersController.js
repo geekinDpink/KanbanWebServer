@@ -16,32 +16,35 @@ const findUser = async (req, res, next) => {
   try {
     const results = await dbQuery(sql, queryArr);
 
-    const {
-      username: dbUser,
-      password: dbPass,
-      usergroup: dbUsergroup,
-    } = results[0];
+    const { username: dbUser, password: dbPass, active: dbActive } = results[0];
 
-    // check if password match with db password which is hashed
-    const isMatch = await bcrypt.compare(password, dbPass);
+    if (dbActive) {
+      // check if password match with db password which is hashed
+      const isMatch = await bcrypt.compare(password, dbPass);
 
-    if (isMatch) {
-      // store username and usergroup in token
-      var token = jwt.sign(
-        { username: dbUser },
-        process.env.JWT_SECRET
-        //{ expiresIn: "1m" }
-      );
-      // results[0].token = token;
-      // res.send(results);
-      res.status(200).json({
-        status: "success",
-        token: token,
-      });
+      if (isMatch) {
+        // store username and usergroup in token
+        var token = jwt.sign(
+          { username: dbUser },
+          process.env.JWT_SECRET
+          //{ expiresIn: "1m" }
+        );
+        // results[0].token = token;
+        // res.send(results);
+        res.status(200).json({
+          status: "success",
+          token: token,
+        });
+      } else {
+        res.status(404).json({
+          status: "fail",
+          message: "Password does not match",
+        });
+      }
     } else {
-      res.status(404).json({
+      res.json({
         status: "fail",
-        message: "Password does not match",
+        remarks: "Inactive user",
       });
     }
   } catch (error) {
