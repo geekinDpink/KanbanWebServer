@@ -247,3 +247,128 @@ exports.usersController = {
   getAllUser: getAllUser,
   getUserById: getUserById,
 };
+
+const findUser4 = async (req, res, next) => {
+  let { username, password } = req.body;
+
+  const dbQuery = (sql, queryArr) => {
+    return new Promise((resolve, reject) => {
+      connection.query(sql, queryArr, (error, results) => {
+        if (error) {
+          return reject(error);
+        }
+        return resolve(results);
+      });
+    });
+  };
+
+  const sql = "SELECT * FROM useraccounts WHERE username = ?";
+  const queryArr = [username];
+
+  try {
+    const results = await dbQuery(sql, queryArr);
+    res.status(200).json({ results: results }); // send a json response
+  } catch (e) {
+    console.log(e); // console log the error so we can see it in the console
+    res.sendStatus(500);
+  }
+};
+
+/* Template for connection query*/
+// const findUser4 = async (req, res, next) => {
+//   let { username, password } = req.body;
+
+//   const dbQuery = (sql, queryArr) => {
+//     return new Promise((resolve, reject) => {
+//       connection.query(sql, queryArr, (error, results) => {
+//         if (error) {
+//           return reject(error);
+//         }
+//         return resolve(results);
+//       });
+//     });
+//   };
+
+//   const sql = "SELECT * FROM useraccounts WHERE username = ?";
+//   const queryArr = [username];
+
+//   try {
+//     const results = await dbQuery(sql, queryArr);
+//     res.status(200).json({ results: results }); // send a json response
+//   } catch (e) {
+//     console.log(e); // console log the error so we can see it in the console
+//     res.sendStatus(500);
+//   }
+// };
+
+/* precusor to template */
+// const findUser3 = async (req, res, next) => {
+//   let { username, password } = req.body;
+
+//   const dbQuery = () => {
+//     return new Promise((resolve, reject) => {
+//       connection.query(
+//         "SELECT * FROM useraccounts WHERE username = ?",
+//         [username],
+//         (error, results) => {
+//           if (error) {
+//             return reject(error);
+//           }
+//           return resolve(results);
+//         }
+//       );
+//     });
+//   };
+
+//   try {
+//     const results = await dbQuery();
+//     res.status(200).json({ elements: results }); // send a json response
+//   } catch (e) {
+//     console.log(e); // console log the error so we can see it in the console
+//     res.sendStatus(500);
+//   }
+// };
+
+// const findUser = (req, res, next) => {
+//   let { username, password } = req.body;
+
+//   connection.query(
+//     "SELECT * FROM useraccounts WHERE username = ?",
+//     [username],
+//     function (err, results) {
+//       if (err) {
+//         res.status(500).json(err);
+//       } else {
+//         res.status(200).send(results);
+//       }
+//     }
+//   );
+// };
+
+// for admin, update all fields
+// const updateUserAllDetails = async (req, res, next) => {
+//   let { username, password, email, usergroup, myusergroup } = req.body;
+//   console.log("update user", req.body);
+
+//   // hash password and save to db
+//   if ((username, password, email, usergroup, myusergroup)) {
+//     let hashpwd = await bcrypt.hash(password, saltRounds);
+//     connection.query(
+//       "UPDATE kanban.useraccounts SET password = ?, email = ?, usergroup = ?, active = ? WHERE username = ?",
+//       [hashpwd, email, usergroup, true, username],
+//       function (err, results) {
+//         if (err) {
+//           res.status(500).json(err);
+//         } else {
+//           if (results.length > 0) {
+//             res.send(results);
+//           } else {
+//             res.status(404).send("User Account Not Found");
+//           }
+//         }
+//       }
+//     );
+//   } else {
+//     res.status(404).end("Invalid Request due to missing parameters");
+//   }
+// };
