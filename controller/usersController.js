@@ -18,42 +18,48 @@ const findUser = async (req, res, next) => {
 
     const { username: dbUser, password: dbPass, active: dbActive } = results[0];
 
-    // issue token only to active user, token undefined for inactive user; undefined will be omitted from res
-    if (dbActive) {
-      // check if password match with db password which is hashed
-      const isMatch = await bcrypt.compare(password, dbPass);
+    // check if password match with db password which is hashed
+    const isMatch = await bcrypt.compare(password, dbPass);
 
-      if (isMatch) {
-        // store username and usergroup in token
-        var token = jwt.sign(
-          { username: dbUser },
-          process.env.JWT_SECRET
-          //{ expiresIn: "1m" }
-        );
-        // results[0].token = token;
-        // res.send(results);
-        res.status(200).json({
-          status: "success",
-          token: token,
+    // issue token only to active user, token undefined for inactive user; undefined will be omitted from res
+    if (dbActive && isMatch) {
+      // store username and usergroup in token
+      var token = jwt.sign(
+        { username: dbUser },
+        process.env.JWT_SECRET
+        //{ expiresIn: "1m" }
+      );
+      // results[0].token = token;
+      // res.send(results);
+      res.status(200).json({
+        status: "success",
+        token: token,
+      });
+    } else {
+      if (!isMatch) {
+        res.status(403).json({
+          status: "Fail",
+          token: undefined,
+          remarks: "Invalid password/username",
+        });
+      } else if (!dbActive) {
+        res.status(404).json({
+          status: "Fail",
+          token: undefined,
+          remarks: "Inactive user",
         });
       } else {
-        res.status(404).json({
-          status: "fail",
+        res.status(400).json({
+          status: "Fail",
           token: undefined,
-          remarks: "Password does not match",
+          remarks: "Login denied",
         });
       }
-    } else {
-      res.status(403).json({
-        status: "fail",
-        token: undefined,
-        remarks: "Inactive user",
-      });
     }
   } catch (error) {
     console.log(error);
     res.json({
-      status: "fail",
+      status: "Fail",
       token: undefined,
       remarks: "Error with database server transaction/connections",
       error: error,
