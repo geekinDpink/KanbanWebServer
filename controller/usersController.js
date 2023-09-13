@@ -71,25 +71,30 @@ const findUser = async (req, res, next) => {
 // Create new user + async to wait for encryption of password
 ////////////////////////////////////////////////////////////////
 const registerNewUser = async (req, res, next) => {
-  let { username, password, email, usergroup } = req.body;
+  const { username, password, email, usergroup } = req.body;
+  const { currentUserGroup: myUserGroup } = req.currentUser;
   console.log("register", req.body);
 
-  if (username && password && usergroup) {
-    let hashpwd = await bcrypt.hash(password, saltRounds);
+  if (myUserGroup === "admin") {
+    if (username && password && usergroup) {
+      let hashpwd = await bcrypt.hash(password, saltRounds);
 
-    try {
-      const sql =
-        "INSERT INTO useraccounts (username, password, email, usergroup, active) VALUES (?,?,?,?,?)";
-      const queryArr = [username, hashpwd, email, usergroup, true];
+      try {
+        const sql =
+          "INSERT INTO useraccounts (username, password, email, usergroup, active) VALUES (?,?,?,?,?)";
+        const queryArr = [username, hashpwd, email, usergroup, true];
 
-      // save record to db. DB rule disallowed duplicate username/email.
-      const results = await dbQuery(sql, queryArr);
-      res.status(200).send(results);
-    } catch (error) {
-      res.status(500).json(error);
+        // save record to db. DB rule disallowed duplicate username/email.
+        const results = await dbQuery(sql, queryArr);
+        res.status(200).send(results);
+      } catch (error) {
+        res.status(500).json(error);
+      }
+    } else {
+      res.status(404).send("Invalid Request due to missing parameters");
     }
   } else {
-    res.status(404).end("Invalid Request due to missing parameters");
+    res.status(403).send("Not authorised");
   }
 };
 
