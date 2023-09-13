@@ -28,6 +28,7 @@ router
 router
   .route("/users")
   .post(verifyToken, getCurrUserGroup, usersController.getAllUser);
+router.route("/user").get(verifyToken, usersController.getMyUser);
 router
   .route("/user")
   .post(verifyToken, getCurrUserGroup, usersController.getUserById);

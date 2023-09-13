@@ -196,12 +196,11 @@ const getAllUser = async (req, res, next) => {
 };
 
 ////////////////////////////////////////////////////////////////
-// Admin can find any user details but user can only view their details
+// Only Admin can find any user details
 ////////////////////////////////////////////////////////////////
 const getUserById = async (req, res, next) => {
   const { username } = req.body;
-  const { currentUsername: myUsername, currentUserGroup: myUserGroup } =
-    req.currentUser;
+  const { currentUserGroup: myUserGroup } = req.currentUser;
 
   // find user by username
   let queryDBUserById = async (username2, res) => {
@@ -222,14 +221,34 @@ const getUserById = async (req, res, next) => {
     } else {
       res.status(404).send("Invalid Request due to missing parameters");
     }
+  } else {
+    res.status(404).send("Not authorised");
   }
-  // user can only search their own details
-  else {
-    if (myUsername) {
-      queryDBUserById(myUsername, res);
-    } else {
-      res.status(404).send("Invalid Request due to missing parameters");
+};
+
+////////////////////////////////////////////////////////////////
+// View Own User Details - My Profile Page
+////////////////////////////////////////////////////////////////
+const getMyUser = async (req, res, next) => {
+  const { currentUsername: myUsername } = req.currentUser;
+
+  // find user by username
+  let queryDBUserById = async (username2, res) => {
+    try {
+      const sql = "SELECT * FROM useraccounts WHERE username = ?";
+      const queryArr = [username2];
+      const results = await dbQuery(sql, queryArr);
+      res.status(200).send(results);
+    } catch (error) {
+      res.status(500).json(err);
     }
+  };
+
+  // user can only search their own details
+  if (myUsername) {
+    queryDBUserById(myUsername, res);
+  } else {
+    res.status(404).send("Invalid Request due to missing parameters");
   }
 };
 
@@ -239,4 +258,5 @@ exports.usersController = {
   updateUserDetails: updateUserDetails,
   getAllUser: getAllUser,
   getUserById: getUserById,
+  getMyUser: getMyUser,
 };
