@@ -1,5 +1,5 @@
 const { dbQuery } = require("../config/dbConfig");
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcrypt"); // TODO change to bcryptjs
 const jwt = require("jsonwebtoken");
 const config = require("../config/config");
 
@@ -16,7 +16,12 @@ const findUser = async (req, res, next) => {
   try {
     const results = await dbQuery(sql, queryArr);
 
-    const { username: dbUser, password: dbPass, active: dbActive } = results[0];
+    const {
+      username: dbUser,
+      password: dbPass,
+      active: dbActive,
+      usergroup: dbUserGroup,
+    } = results[0];
 
     // check if password match with db password which is hashed
     const isMatch = await bcrypt.compare(password, dbPass);
@@ -34,8 +39,11 @@ const findUser = async (req, res, next) => {
       res.status(200).json({
         status: "success",
         token: token,
+        isAdmin: dbUserGroup.includes("admin"),
       });
-    } else {
+    }
+    // if not in db and/or not active user
+    else {
       if (!isMatch) {
         res.status(403).json({
           status: "Fail",
@@ -252,6 +260,28 @@ const getMyUser = async (req, res, next) => {
   }
 };
 
+//////////////////////////////////
+// Check if user is admin - Used during start of every react route
+//////////////////////////////////
+const checkIsAdmin = async (req, res, next) => {
+  const username = req.currentUser.currentUsername;
+  const sql = "SELECT usergroup FROM useraccounts WHERE username = ?";
+  const queryArr = [username];
+
+  if (username) {
+    try {
+      const results = await dbQuery(sql, queryArr);
+
+      const isAdmin = results[0].usergroup.includes("admin") ? "yes" : "no";
+      res.status(200).send({ isAdmin: isAdmin });
+    } catch (error) {
+      res.status(404).send(error);
+    }
+  } else {
+    res.status(404).send("Invalid Request due to missing parameters");
+  }
+};
+
 exports.usersController = {
   findUser: findUser,
   registerNewUser: registerNewUser,
@@ -259,4 +289,5 @@ exports.usersController = {
   getAllUser: getAllUser,
   getUserById: getUserById,
   getMyUser: getMyUser,
+  checkIsAdmin: checkIsAdmin,
 };

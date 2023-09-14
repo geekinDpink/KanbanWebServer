@@ -29,6 +29,28 @@ const getAllUserGroups = async (req, res, next) => {
   }
 };
 
+const createUserGroup = async (req, res, next) => {
+  const { usergroup } = req.body;
+  const { currentUserGroup: myUserGroup } = req.currentUser;
+  if (myUserGroup.includes("admin")) {
+    if (usergroup) {
+      try {
+        const sql = "INSERT INTO usergroups (usergroup) VALUES (?)";
+        const queryArr = [usergroup];
+        const results = await dbQuery(sql, queryArr);
+        res.status(200).send(results);
+      } catch (error) {
+        res.status(500).json(error);
+      }
+    } else {
+      res.status(404).end("Invalid Request due to missing parameters");
+    }
+  } else {
+    res.status(403).send("Not authorised");
+  }
+};
+
 exports.usergroupsController = {
   getAllUserGroups: getAllUserGroups,
+  createUserGroup: createUserGroup,
 };
