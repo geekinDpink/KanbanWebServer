@@ -165,7 +165,7 @@ const updateUserDetails = async (req, res, next) => {
   // check myusergroup is undefined, and if the user is admin or users(others)
   if (!myusergroup) {
     res.status(404).end("Not authorised");
-  } else if (myusergroup === "admin") {
+  } else if (myusergroup.includes("admin")) {
     // only admin can update usergroup
     if (password && saltRounds && email && usergroup && username) {
       updateAllFields(password, saltRounds, email, usergroup, username, res);
@@ -188,7 +188,7 @@ const getAllUser = (req, res, next) => {
   let { myusergroup } = req.body;
 
   // check if the user doing the updating is admin
-  if (myusergroup === "admin") {
+  if (myusergroup.includes("admin")) {
     connection.query("SELECT * FROM useraccounts", function (err, results) {
       if (err) {
         res.status(500).json(err);
@@ -223,7 +223,7 @@ const getUserById = (req, res, next) => {
   // check if there is usergroup and if usergroup is admin or user
   if (!myusergroup) {
     return res.status(401).end("User is not authorized"); // not authorized
-  } else if (myusergroup === "admin") {
+  } else if (myusergroup.includes("admin")) {
     // admin find other user details
     if (username) {
       queryDBUserById(username, res);

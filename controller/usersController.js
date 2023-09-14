@@ -75,7 +75,7 @@ const registerNewUser = async (req, res, next) => {
   const { currentUserGroup: myUserGroup } = req.currentUser;
   console.log("register", req.body);
 
-  if (myUserGroup === "admin") {
+  if (myUserGroup.includes("admin")) {
     if (username && password && usergroup) {
       let hashpwd = await bcrypt.hash(password, saltRounds);
 
@@ -148,7 +148,7 @@ const updateUserDetails = async (req, res, next) => {
     }
   };
 
-  if (myUserGroup === "admin") {
+  if (myUserGroup.includes("admin")) {
     // only admin can update usergroup
     if (password && saltRounds && email && usergroup && username) {
       console.log("update by admin");
@@ -181,7 +181,7 @@ const getAllUser = async (req, res, next) => {
   let { currentUserGroup: myUserGroup } = req.currentUser;
 
   // check if the user doing the updating is admin
-  if (myUserGroup === "admin") {
+  if (myUserGroup.includes("admin")) {
     try {
       const sql = "SELECT * FROM useraccounts";
       const queryArr = [];
@@ -215,7 +215,7 @@ const getUserById = async (req, res, next) => {
   };
 
   // admin find other user details
-  if (myUserGroup === "admin") {
+  if (myUserGroup.includes("admin")) {
     if (username) {
       queryDBUserById(username, res);
     } else {
