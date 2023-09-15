@@ -33,3 +33,30 @@ TODO
 Login API provide isAdmin
 New Page API isAdmin?
 bcryptjs
+
+###Create DB and Table SQL Script
+
+```
+CREATE DATABASE IF NOT EXISTS `kanban` DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci;
+USE `kanban`;
+
+CREATE TABLE IF NOT EXISTS `useraccounts` (
+`username` varchar(50) NOT NULL UNIQUE,
+`password` varchar(150) NOT NULL,
+`email` varchar(100),
+`usergroup` varchar(100),
+`active` boolean NOT NULL,
+PRIMARY KEY (`username`)
+) ENGINE=InnoDB CHARSET=utf8;
+
+CREATE TABLE IF NOT EXISTS `usergroups` (
+`usergroup` varchar(50) NOT NULL UNIQUE,
+PRIMARY KEY (`usergroup`)
+) ENGINE=InnoDB CHARSET=utf8;
+
+INSERT INTO `useraccounts` (`username`, `password`, `email`, `usergroup`, `active`) VALUES ('tom', '$2b$10$p93y0DPA53BNSqiC7JAD8uFYI0ypnJBsq4cnRYoHLAFi.lcTr5RRO', 'test@test.com', 'adminuseraccounts', true);
+INSERT INTO `usergroups` (`usergroup`) VALUES ('admin');
+INSERT INTO `usergroups` (`usergroup`) VALUES ('project manager');
+INSERT INTO `usergroups` (`usergroup`) VALUES ('project lead');
+INSERT INTO `usergroups` (`usergroup`) VALUES ('developer');
+```
