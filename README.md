@@ -24,7 +24,7 @@ Webpack bundler - bundle code and JSX transpiler
 
 Validate email based on email pattern
 
-TODO Validate inputs
+TODO Validate inputs AND Return error code
 Add password - length, regex in miro board
 password.match(rule)
 let rule = /^(?=._\d)(?=._[~`!@#$%^&*()--+={}\[\]|\\:;"'<>,.?/_₹])(?=.\*[a-zA-Z]).{8,10}$/;
