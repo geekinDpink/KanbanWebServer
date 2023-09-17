@@ -83,8 +83,57 @@ const registerNewUser = async (req, res, next) => {
   const { currentUserGroup: myUserGroup } = req.currentUser;
   console.log("register", req.body);
 
+  // Check for error
+  const valUsername = async (username) => {
+    const sql = "SELECT * FROM useraccounts WHERE username = ?";
+    const queryArr = [username];
+    const results = await dbQuery(sql, queryArr);
+
+    if (!username) {
+      return "No username provided";
+    } else if (username.length < 3) {
+      return "Username:Mins 3 chars";
+    } else if (results[0]) {
+      return "Existing Username";
+    } else {
+      return false;
+    }
+  };
+
+  const valEmail = (email) => {
+    // letter/no/special char contain @ and ., 2 in length
+    const regex = /^([a-zA-Z0-9._%-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$/;
+    if (!regex.test(email)) {
+      return "Invalid email";
+    } else {
+      return false;
+    }
+  };
+
+  const valPassword = (password) => {
+    // ^- context start, (?=._\d)-contain digit, (?=._[~!@#$%^&*()--+={}\[\]|\\:;"'<>,.?/_₹])-special char
+    // (?=.\*[a-zA-Z])-at least 1 lower/uppercase, .{8,10}-length of 8-10
+    // const regex = /^(?=._\d)(?=.\*[a-z])(?=.\*[A-Z]).{8,10}$/;
+    // const regex2 =
+    //   /^(?=._\d)(?=._[~`!@#$%^&*()--+={}\[\]|\\:;"'<>,.?/_₹])(?=.\*[a-zA-Z]).{8,10}$/;
+
+    if (!password) {
+      return "Missing password";
+    }
+    // else if (!regex2.test(password)) {
+    //   return "Weak password"; // not in requirement
+    // }
+    else {
+      return false;
+    }
+  };
+
+  const invalidUsername = await valUsername(username);
+  const invalidEmail = await valEmail(email);
+  const invalidPassword = await valPassword(password);
+
   if (myUserGroup.includes("admin")) {
-    if (username && password && usergroup) {
+    if (!invalidUsername && !invalidEmail && !invalidPassword && usergroup) {
       let hashpwd = await bcrypt.hash(password, saltRounds);
 
       try {
@@ -99,7 +148,15 @@ const registerNewUser = async (req, res, next) => {
         res.status(500).json(error);
       }
     } else {
-      res.status(404).send("Invalid Request due to missing parameters");
+      if (invalidUsername) {
+        res.status(404).send(invalidUsername);
+      } else if (invalidEmail) {
+        res.status(404).send(invalidEmail);
+      } else if (invalidPassword) {
+        res.status(404).send(invalidPassword);
+      } else {
+        res.status(404).send("Invalid Request");
+      }
     }
   } else {
     res.status(403).send("Not authorised");
