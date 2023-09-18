@@ -1,6 +1,7 @@
 Error Handling: Missing Params - 400, Authorized users, DB Query error [test case: wrong dbconfig] - 500, JWT sign
 
 TODO
+TODO Checkgroup
 Add expiry and refresh token
 TODO DB Query Error Handling
 TODO Update cannot find matching records

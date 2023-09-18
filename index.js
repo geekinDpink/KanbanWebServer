@@ -38,7 +38,7 @@ router
 router
   .route("/usergroups")
   .post(verifyToken, getCurrUserGroup, usergroupsController.createUserGroup);
-router.route("/auth").post(verifyToken, usersController.checkIsAdmin);
+router.route("/user/usergroup").post(verifyToken, usersController.checkGroup);
 
 app.use(router);
 

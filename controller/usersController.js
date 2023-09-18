@@ -346,19 +346,17 @@ const getMyUser = async (req, res, next) => {
 };
 
 //////////////////////////////////
-// Check if user is admin - Used during start of every react route
+// Check if usergroup
 //////////////////////////////////
-const checkIsAdmin = async (req, res, next) => {
-  const username = req.currentUser.currentUsername;
+const checkGroup = async (req, res, next) => {
+  const { username } = req.body;
   const sql = "SELECT usergroup FROM useraccounts WHERE username = ?";
   const queryArr = [username];
 
   if (username) {
     try {
       const results = await dbQuery(sql, queryArr);
-
-      const isAdmin = results[0].usergroup.includes("admin") ? "yes" : "no";
-      res.status(200).send({ isAdmin: isAdmin });
+      res.status(200).send(results);
     } catch (error) {
       res.status(404).send(error);
     }
@@ -374,5 +372,5 @@ exports.usersController = {
   getAllUser: getAllUser,
   getUserById: getUserById,
   getMyUser: getMyUser,
-  checkIsAdmin: checkIsAdmin,
+  checkGroup: checkGroup,
 };
