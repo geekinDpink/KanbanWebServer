@@ -5,6 +5,54 @@ const config = require("../config/config");
 
 const saltRounds = config.saltRound; // return int as string
 
+////////////////////////////////////////////////////////////
+// Functions for validating inputs
+/////////////////////////////////////////////////////////
+const valUsername = async (username) => {
+  const sql = "SELECT * FROM useraccounts WHERE username = ?";
+  const queryArr = [username];
+  const results = await dbQuery(sql, queryArr);
+
+  if (!username) {
+    return "No username provided";
+  } else if (username.length < 3) {
+    return "Username:Mins 3 chars";
+  } else if (username.length > 51) {
+    return "Username:Max 50 chars";
+  } else if (results[0]) {
+    return "Existing Username";
+  } else {
+    return false;
+  }
+};
+
+const valPassword = (password, isCreate) => {
+  // ^- context start, (?=._\d)-contain digit, (?=._[~!@#$%^&*()--+={}\[\]|\\:;"'<>,.?/_₹])-special char, (?=.\*[a-zA-Z])-at least 1 lower/uppercase, .{8,10}-length of 8-10
+  // const regex = /^(?=._\d)(?=.\*[a-z])(?=.\*[A-Z]).{8,10}$/;
+
+  if (isCreate && !password) {
+    return "No password provided";
+  } else if (password.length > 51) {
+    return "Username:Max 50 chars";
+  }
+  // else if (!regex.test(password)) {
+  //   return "Weak password"; // not in requirement
+  // }
+  else {
+    return false;
+  }
+};
+
+const valEmail = (email) => {
+  // letter/no/special char contain @ and ., 2 in length
+  const regex = /^([a-zA-Z0-9._%-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$/;
+  if (email && !regex.test(email)) {
+    return "Invalid email";
+  } else {
+    return false;
+  }
+};
+
 ////////////////////////////////////////////////////////////////
 // check if user details match in db for login
 ////////////////////////////////////////////////////////////////
@@ -77,63 +125,19 @@ const findUser = async (req, res, next) => {
 
 ////////////////////////////////////////////////////////////////
 // Create new user + async to wait for encryption of password
+// Username, Password are mandatory, Active is by default true
 ////////////////////////////////////////////////////////////////
 const registerNewUser = async (req, res, next) => {
   const { username, password, email, usergroup } = req.body;
   const { currentUserGroup: myUserGroup } = req.currentUser;
   console.log("register", req.body);
 
-  // Check for error
-  const valUsername = async (username) => {
-    const sql = "SELECT * FROM useraccounts WHERE username = ?";
-    const queryArr = [username];
-    const results = await dbQuery(sql, queryArr);
-
-    if (!username) {
-      return "No username provided";
-    } else if (username.length < 3) {
-      return "Username:Mins 3 chars";
-    } else if (results[0]) {
-      return "Existing Username";
-    } else {
-      return false;
-    }
-  };
-
-  const valEmail = (email) => {
-    // letter/no/special char contain @ and ., 2 in length
-    const regex = /^([a-zA-Z0-9._%-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$/;
-    if (!regex.test(email)) {
-      return "Invalid email";
-    } else {
-      return false;
-    }
-  };
-
-  const valPassword = (password) => {
-    // ^- context start, (?=._\d)-contain digit, (?=._[~!@#$%^&*()--+={}\[\]|\\:;"'<>,.?/_₹])-special char
-    // (?=.\*[a-zA-Z])-at least 1 lower/uppercase, .{8,10}-length of 8-10
-    // const regex = /^(?=._\d)(?=.\*[a-z])(?=.\*[A-Z]).{8,10}$/;
-    // const regex2 =
-    //   /^(?=._\d)(?=._[~`!@#$%^&*()--+={}\[\]|\\:;"'<>,.?/_₹])(?=.\*[a-zA-Z]).{8,10}$/;
-
-    if (!password) {
-      return "Missing password";
-    }
-    // else if (!regex2.test(password)) {
-    //   return "Weak password"; // not in requirement
-    // }
-    else {
-      return false;
-    }
-  };
-
   const invalidUsername = await valUsername(username);
   const invalidEmail = await valEmail(email);
-  const invalidPassword = await valPassword(password);
+  const invalidPassword = await valPassword(password, true);
 
   if (myUserGroup.includes("admin")) {
-    if (!invalidUsername && !invalidEmail && !invalidPassword && usergroup) {
+    if (!invalidUsername && !invalidEmail && !invalidPassword) {
       let hashpwd = await bcrypt.hash(password, saltRounds);
 
       try {
@@ -167,7 +171,6 @@ const registerNewUser = async (req, res, next) => {
 // for admin, update all fields
 ////////////////////////////////////////////////////////////////
 const updateUserDetails = async (req, res, next) => {
-  // Todo: isAdmin must refer to the person who changed it, based on the token search
   const { username, password, email, usergroup, active } = req.body;
   const { currentUsername: myUsername, currentUserGroup: myUserGroup } =
     req.currentUser;
