@@ -8,7 +8,7 @@ const saltRounds = config.saltRound; // return int as string
 ////////////////////////////////////////////////////////////
 // Functions for validating inputs
 /////////////////////////////////////////////////////////
-const valUsername = async (username) => {
+const valUsername = async (username, isCreate) => {
   const sql = "SELECT * FROM useraccounts WHERE username = ?";
   const queryArr = [username];
   const results = await dbQuery(sql, queryArr);
@@ -19,8 +19,10 @@ const valUsername = async (username) => {
     return "Username:Mins 3 chars";
   } else if (username.length > 51) {
     return "Username:Max 50 chars";
-  } else if (results[0]) {
+  } else if (isCreate && results.length > 0) {
     return "Existing Username";
+  } else if (!isCreate && results.length === 0) {
+    return "No existing user";
   } else {
     return false;
   }
@@ -32,7 +34,7 @@ const valPassword = (password, isCreate) => {
 
   if (isCreate && !password) {
     return "No password provided";
-  } else if (password.length > 51) {
+  } else if (password && password.length > 51) {
     return "Username:Max 50 chars";
   }
   // else if (!regex.test(password)) {
@@ -132,7 +134,7 @@ const registerNewUser = async (req, res, next) => {
   const { currentUserGroup: myUserGroup } = req.currentUser;
   console.log("register", req.body);
 
-  const invalidUsername = await valUsername(username);
+  const invalidUsername = await valUsername(username, true);
   const invalidEmail = await valEmail(email);
   const invalidPassword = await valPassword(password, true);
 
@@ -175,7 +177,11 @@ const updateUserDetails = async (req, res, next) => {
   const { currentUsername: myUsername, currentUserGroup: myUserGroup } =
     req.currentUser;
 
-  // for admin, update all fields
+  const invalidUsername = await valUsername(username, false);
+  const invalidEmail = await valEmail(email);
+  const invalidPassword = await valPassword(password, false);
+
+  // function for admin, update all fields//////////////////////////
   let updateAllFields = async (
     pwd,
     saltRnd,
@@ -186,21 +192,22 @@ const updateUserDetails = async (req, res, next) => {
     res
   ) => {
     // hash password and save to db
-    let hashpwd = await bcrypt.hash(pwd, saltRnd);
+    let hashpwd = pwd ? await bcrypt.hash(pwd, saltRnd) : null;
+    console.log("update by admin2");
 
     // TODO need to catch username not valid
     try {
       const sql =
-        "UPDATE kanban.useraccounts SET password = ?, email = ?, usergroup = ?, active = ? WHERE username = ?";
+        "UPDATE kanban.useraccounts SET password = COALESCE(?,password), email = COALESCE(?,email) , usergroup = COALESCE(?,usergroup), active = ? WHERE username = ?";
       const queryArr = [hashpwd, email2, usergroup2, active2, username2];
       const results = await dbQuery(sql, queryArr);
       res.status(200).send(results);
     } catch (error) {
-      res.status(500).json(error);
+      res.status(500).send(error);
     }
   };
 
-  // for user, update only the email and pass
+  // function for user, update only the email and pass ////////////////////////////
   let updateCertainFields = async (pwd, saltRnd, email2, username2, res) => {
     // hash password and save to db
     let hashpwd = await bcrypt.hash(pwd, saltRnd);
@@ -218,8 +225,8 @@ const updateUserDetails = async (req, res, next) => {
 
   if (myUserGroup.includes("admin")) {
     // only admin can update usergroup
-    if (password && saltRounds && email && usergroup && username) {
-      console.log("update by admin");
+    if (!invalidPassword && saltRounds && !invalidEmail && !invalidUsername) {
+      console.log("update by admin1");
       updateAllFields(
         password,
         saltRounds,
@@ -230,14 +237,22 @@ const updateUserDetails = async (req, res, next) => {
         res
       );
     } else {
-      res.status(404).end("Invalid Request due to missing parameters");
+      if (invalidUsername) {
+        res.status(404).send(invalidUsername);
+      } else if (invalidEmail) {
+        res.status(404).send(invalidEmail);
+      } else if (invalidPassword) {
+        res.status(404).send(invalidPassword);
+      } else {
+        res.status(404).send("Invalid Request");
+      }
     }
   } else {
     // user can only update his own password and email, so use myUsername instead of username from req body
     if (password && saltRounds && email && myUsername) {
       updateCertainFields(password, saltRounds, email, myUsername, res);
     } else {
-      res.status(404).end("Invalid Request due to missing parameters");
+      res.status(404).send("Invalid Request due to missing parameters");
     }
   }
 };
