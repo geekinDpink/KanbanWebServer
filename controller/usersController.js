@@ -34,8 +34,10 @@ const valPassword = (password, isCreate) => {
 
   if (isCreate && !password) {
     return "No password provided";
-  } else if (password && password.length > 51) {
-    return "Username:Max 50 chars";
+  } else if (password && password.length > 11) {
+    return "Username:Max 50 characters";
+  } else if (password && password.length < 8) {
+    return "Username:Min 8 characters";
   }
   // else if (!regex.test(password)) {
   //   return "Weak password"; // not in requirement
