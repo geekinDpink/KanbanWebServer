@@ -2,7 +2,9 @@ Error Handling: Missing Params - 400, Authorized users, DB Query error [test cas
 
 TODO
 TODO Checkgroup
-Add expiry and refresh token
+TODO Password contains special char, upper and lower
+password.match(rule), let rule = /^(?=._\d)(?=._[~`!@#$%^&*()--+={}\[\]|\\:;"'<>,.?/_₹])(?=.\*[a-zA-Z]).{8,10}$/;
+TODO Add expiry and refresh token
 TODO DB Query Error Handling
 TODO Update cannot find matching records
 TODO catchasyncerror wrapper
@@ -14,7 +16,6 @@ TODO CORS prevent u
 Done
 Got token -> Sessionislogged on
 Validate inputs AND Return error code
-password.match(rule), let rule = /^(?=._\d)(?=._[~`!@#$%^&*()--+={}\[\]|\\:;"'<>,.?/_₹])(?=.\*[a-zA-Z]).{8,10}$/;
 Login API provide isAdmin
 New Page API isAdmin?
 
