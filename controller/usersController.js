@@ -181,8 +181,8 @@ const updateUserDetails = async (req, res, next) => {
   const invalidEmail = await valEmail(email);
   const invalidPassword = await valPassword(password, false);
 
-  // function for admin, update all fields//////////////////////////
-  let updateAllFields = async (
+  /************** function for admin, update all fields********************/
+  let adminUpdate = async (
     pwd,
     saltRnd,
     email2,
@@ -198,7 +198,7 @@ const updateUserDetails = async (req, res, next) => {
     // TODO need to catch username not valid
     try {
       const sql =
-        "UPDATE kanban.useraccounts SET password = COALESCE(?,password), email = COALESCE(?,email) , usergroup = COALESCE(?,usergroup), active = ? WHERE username = ?";
+        "UPDATE kanban.useraccounts SET password = COALESCE(?,password), email = ?, usergroup = ?, active = ? WHERE username = ?";
       const queryArr = [hashpwd, email2, usergroup2, active2, username2];
       const results = await dbQuery(sql, queryArr);
       res.status(200).send(results);
@@ -207,14 +207,14 @@ const updateUserDetails = async (req, res, next) => {
     }
   };
 
-  // function for user, update only the email and pass ////////////////////////////
-  let updateCertainFields = async (pwd, saltRnd, email2, username2, res) => {
+  /*****************function for user, update own email and pass field **********************/
+  let userUpdate = async (pwd, saltRnd, email2, username2, res) => {
     // hash password and save to db
-    let hashpwd = await bcrypt.hash(pwd, saltRnd);
+    let hashpwd = pwd ? await bcrypt.hash(pwd, saltRnd) : null;
 
     try {
       const sql =
-        "UPDATE kanban.useraccounts SET password = ?, email = ? WHERE username = ?";
+        "UPDATE kanban.useraccounts SET password = COALESCE(?,password), email = COALESCE(?,email) WHERE username = ?";
       const queryArr = [hashpwd, email2, username2];
       const results = await dbQuery(sql, queryArr);
       res.status(200).send(results);
@@ -224,10 +224,10 @@ const updateUserDetails = async (req, res, next) => {
   };
 
   if (myUserGroup.includes("admin")) {
-    // only admin can update usergroup
+    // only admin can update usergroup field and other users
     if (!invalidPassword && saltRounds && !invalidEmail && !invalidUsername) {
       console.log("update by admin1");
-      updateAllFields(
+      adminUpdate(
         password,
         saltRounds,
         email,
@@ -244,15 +244,23 @@ const updateUserDetails = async (req, res, next) => {
       } else if (invalidPassword) {
         res.status(404).send(invalidPassword);
       } else {
-        res.status(404).send("Invalid Request");
+        res.status(404).send("Invalid Request due to missing parameters");
       }
     }
   } else {
     // user can only update his own password and email, so use myUsername instead of username from req body
-    if (password && saltRounds && email && myUsername) {
-      updateCertainFields(password, saltRounds, email, myUsername, res);
+    if (!invalidPassword && saltRounds && !invalidEmail && !invalidUsername) {
+      userUpdate(password, saltRounds, email, myUsername, res);
     } else {
-      res.status(404).send("Invalid Request due to missing parameters");
+      if (invalidUsername) {
+        res.status(404).send(invalidUsername);
+      } else if (invalidEmail) {
+        res.status(404).send(invalidEmail);
+      } else if (invalidPassword) {
+        res.status(404).send(invalidPassword);
+      } else {
+        res.status(404).send("Invalid Request due to missing parameters");
+      }
     }
   }
 };
