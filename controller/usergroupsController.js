@@ -43,7 +43,7 @@ const createUserGroup = async (req, res, next) => {
         res.status(500).json(error);
       }
     } else {
-      res.status(404).end("Invalid Request due to missing parameters");
+      res.status(404).send("Invalid Request due to missing parameters");
     }
   } else {
     res.status(403).send("Not authorised");
