@@ -1,16 +1,9 @@
 Error Handling: Missing Params - 400, Authorized users, DB Query error [test case: wrong dbconfig] - 500, JWT sign
 
 TODO
-TODO Checkgroup
-TODO Password contains special char, upper and lower
-password.match(rule), let rule = /^(?=._\d)(?=._[~`!@#$%^&*()--+={}\[\]|\\:;"'<>,.?/_₹])(?=.\*[a-zA-Z]).{8,10}$/;
 TODO Add expiry and refresh token
 TODO DB Query Error Handling
 TODO Update cannot find matching records
-TODO catchasyncerror wrapper
-TODO Send JWT in cookies
-TODO From token, decrpyt to get username and to get query for userroles
-TODO Cookie Parser
 TODO CORS prevent u
 TODO Edit Msg Error
 
@@ -19,6 +12,16 @@ Got token -> Sessionislogged on
 Validate inputs AND Return error code
 Login API provide isAdmin
 New Page API isAdmin?
+password.match(rule), let rule = /^(?=._\d)(?=._[~`!@#$%^&*()--+={}\[\]|\\:;"'<>,.?/_₹])(?=.\*[a-zA-Z]).{8,10}$/;
+From token, decrpyt to get username and to get query for userroles
+Password contains special char, upper and lower
+Add Checkgroup function
+
+Optional
+Checkgroup function to verify user
+catchasyncerror wrapper
+Send JWT in cookies
+Cookie Parser
 
 CORS to protect what? localhost:3000 and credential
 Protect nodejs from unauthorised usage
