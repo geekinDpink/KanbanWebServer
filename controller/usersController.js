@@ -254,8 +254,14 @@ const updateUserDetails = async (req, res, next) => {
       }
     }
   } else {
+    // if username === myusername, edit own details
     // user can only update his own password and email, so use myUsername instead of username from req body
-    if (!invalidPassword && saltRounds && !invalidEmail && !invalidUsername) {
+    if (
+      !invalidPassword &&
+      saltRounds &&
+      !invalidEmail &&
+      !invalidUsername & (username === myUsername)
+    ) {
       userUpdate(password, saltRounds, email, myUsername, res);
     } else {
       if (invalidUsername) {
