@@ -35,9 +35,9 @@ const valPassword = (password, isCreate) => {
   if (isCreate && !password) {
     return "No password provided";
   } else if (password && password.length > 11) {
-    return "Username:Max 50 characters";
+    return "Password:Max 50 characters";
   } else if (password && password.length < 8) {
-    return "Username:Min 8 characters";
+    return "Password:Min 8 characters";
   }
   // else if (!regex.test(password)) {
   //   return "Weak password"; // not in requirement
@@ -196,6 +196,7 @@ const updateUserDetails = async (req, res, next) => {
     // hash password and save to db
     let hashpwd = pwd ? await bcrypt.hash(pwd, saltRnd) : null;
     console.log("update by admin2");
+    console.log("yahoo", active);
 
     // TODO need to catch username not valid
     try {
@@ -204,8 +205,10 @@ const updateUserDetails = async (req, res, next) => {
       const queryArr = [hashpwd, email2, usergroup2, active2, username2];
       const results = await dbQuery(sql, queryArr);
       res.status(200).send(results);
+      console.log("yahoo2", results);
     } catch (error) {
       res.status(500).send(error);
+      console.log("yahoo3", error);
     }
   };
 

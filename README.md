@@ -12,6 +12,7 @@ TODO Send JWT in cookies
 TODO From token, decrpyt to get username and to get query for userroles
 TODO Cookie Parser
 TODO CORS prevent u
+TODO Edit Msg Error
 
 Done
 Got token -> Sessionislogged on
