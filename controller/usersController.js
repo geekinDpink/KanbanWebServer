@@ -30,19 +30,24 @@ const valUsername = async (username, isCreate) => {
 
 const valPassword = (password, isCreate) => {
   // ^- context start, (?=._\d)-contain digit, (?=._[~!@#$%^&*()--+={}\[\]|\\:;"'<>,.?/_₹])-special char, (?=.\*[a-zA-Z])-at least 1 lower/uppercase, .{8,10}-length of 8-10
-  // const regex = /^(?=._\d)(?=.\*[a-z])(?=.\*[A-Z]).{8,10}$/;
+  const regex =
+    /^(?=.*\d)(?=.*[~`!@#$%^&*()--+={}\[\]|\\:;"'<>,.?/_₹])(?=.*[a-zA-Z]).{8,10}$/;
 
   if (isCreate && !password) {
     return "No password provided";
-  } else if (password && password.length > 11) {
-    return "Password:Max 50 characters";
-  } else if (password && password.length < 8) {
-    return "Password:Min 8 characters";
   }
-  // else if (!regex.test(password)) {
-  //   return "Weak password"; // not in requirement
-  // }
-  else {
+
+  if (password) {
+    if (password.length > 10) {
+      return "Password:Max 10 characters";
+    } else if (password.length < 8) {
+      return "Password:Min 8 characters";
+    } else if (!regex.test(password)) {
+      return "Require alphanumeric and special chars";
+    } else {
+      return false;
+    }
+  } else {
     return false;
   }
 };
