@@ -32,7 +32,8 @@ const getAllUserGroups = async (req, res, next) => {
 const createUserGroup = async (req, res, next) => {
   const { usergroup } = req.body;
   const { currentUserGroup: myUserGroup } = req.currentUser;
-  if (myUserGroup.includes("admin")) {
+  // change to lowercase, convert to arr, check for admin
+  if (myUserGroup.toLowerCase().split(",").includes("admin")) {
     if (usergroup) {
       try {
         const sql = "INSERT INTO usergroups (usergroup) VALUES (?)";

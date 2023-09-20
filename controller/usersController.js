@@ -94,7 +94,7 @@ const findUser = async (req, res, next) => {
       res.status(200).json({
         status: "success",
         token: token,
-        isAdmin: dbUserGroup.includes("admin"),
+        isAdmin: dbUserGroup.toLowerCase().split(",").includes("admin"),
       });
     }
     // if not in db and/or not active user
@@ -143,7 +143,8 @@ const registerNewUser = async (req, res, next) => {
   const invalidEmail = await valEmail(email);
   const invalidPassword = await valPassword(password, true);
 
-  if (myUserGroup.includes("admin")) {
+  // change to lowercase, convert to arr, check for admin
+  if (myUserGroup.toLowerCase().split(",").includes("admin")) {
     if (!invalidUsername && !invalidEmail && !invalidPassword) {
       let hashpwd = await bcrypt.hash(password, saltRounds);
 
@@ -226,8 +227,8 @@ const updateUserDetails = async (req, res, next) => {
       res.status(500).json(error);
     }
   };
-
-  if (myUserGroup.includes("admin")) {
+  // change to lowercase, convert to arr, check for admin
+  if (myUserGroup.toLowerCase().split(",").includes("admin")) {
     // only admin can update usergroup field and other users
     if (!invalidPassword && saltRounds && !invalidEmail && !invalidUsername) {
       console.log("update by admin1");
@@ -252,8 +253,7 @@ const updateUserDetails = async (req, res, next) => {
       }
     }
   } else {
-    // if username === myusername, edit own details
-    // user can only update his own password and email, so use myUsername instead of username from req body
+    // user can only update his own password and email, hence do a check on username = myusername, and update with myUsername instead of username from req body
     if (
       !invalidPassword &&
       saltRounds &&
@@ -282,7 +282,8 @@ const getAllUser = async (req, res, next) => {
   let { currentUserGroup: myUserGroup } = req.currentUser;
 
   // check if the user doing the updating is admin
-  if (myUserGroup.includes("admin")) {
+  // change to lowercase, convert to arr, check for admin
+  if (myUserGroup.toLowerCase().split(",").includes("admin")) {
     try {
       const sql = "SELECT * FROM useraccounts";
       const queryArr = [];
@@ -316,7 +317,8 @@ const getUserById = async (req, res, next) => {
   };
 
   // admin find other user details
-  if (myUserGroup.includes("admin")) {
+  // change to lowercase, convert to arr, check for admin
+  if (myUserGroup.toLowerCase().split(",").includes("admin")) {
     if (username) {
       queryDBUserById(username, res);
     } else {

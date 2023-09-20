@@ -16,9 +16,9 @@ password.match(rule), let rule = /^(?=._\d)(?=._[~`!@#$%^&*()--+={}\[\]|\\:;"'<>
 From token, decrpyt to get username and to get query for userroles
 Password contains special char, upper and lower
 Add Checkgroup function
+Refactor admin check from substring to string
 
 Optional
-Checkgroup function to verify user
 catchasyncerror wrapper
 Send JWT in cookies
 Cookie Parser
