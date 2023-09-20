@@ -4,7 +4,7 @@ const bodyParser = require("body-parser");
 const config = require("./config/config");
 const cors = require("cors");
 
-const { verifyToken, getCurrUserGroup } = require("./middleware/auth");
+const { verifyToken, getUserGrpAndVerifyActive } = require("./middleware/auth");
 const { usergroupsController } = require("./controller/usergroupsController");
 const { usersController } = require("./controller/usersController");
 
@@ -21,23 +21,35 @@ app.use(bodyParser.urlencoded({ extended: true })); // Setup the body parser to 
 router.route("/login").post(usersController.findUser);
 router
   .route("/register")
-  .post(verifyToken, getCurrUserGroup, usersController.registerNewUser);
+  .post(
+    verifyToken,
+    getUserGrpAndVerifyActive,
+    usersController.registerNewUser
+  ); // admin only
 router
   .route("/users")
-  .put(verifyToken, getCurrUserGroup, usersController.updateUserDetails);
+  .put(
+    verifyToken,
+    getUserGrpAndVerifyActive,
+    usersController.updateUserDetails
+  );
 router
   .route("/users")
-  .post(verifyToken, getCurrUserGroup, usersController.getAllUser);
+  .post(verifyToken, getUserGrpAndVerifyActive, usersController.getAllUser); // admin only
 router.route("/user").get(verifyToken, usersController.getMyUser);
 router
   .route("/user")
-  .post(verifyToken, getCurrUserGroup, usersController.getUserById);
+  .post(verifyToken, getUserGrpAndVerifyActive, usersController.getUserById); // admin only
 router
   .route("/usergroups")
   .get(verifyToken, usergroupsController.getAllUserGroups);
 router
   .route("/usergroups")
-  .post(verifyToken, getCurrUserGroup, usergroupsController.createUserGroup);
+  .post(
+    verifyToken,
+    getUserGrpAndVerifyActive,
+    usergroupsController.createUserGroup
+  ); // admin only
 router.route("/user/usergroup").post(verifyToken, usersController.checkGroup);
 
 app.use(router);

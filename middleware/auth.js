@@ -24,21 +24,25 @@ const verifyToken = (req, res, next) => {
 };
 
 //////////////////////////////////
-// Two Part Midware - get username from req of previous midware and find usergroup, then pass to http req
+// Two Part Midware - get username from req of previous midware and find usergroup and active status, verify active user and pass status to http req
 //////////////////////////////////
-const getCurrUserGroup = async (req, res, next) => {
+const getUserGrpAndVerifyActive = async (req, res, next) => {
   const username = req.currentUser.currentUsername;
-  const sql = "SELECT usergroup FROM useraccounts WHERE username = ?";
+  const sql = "SELECT usergroup, active FROM useraccounts WHERE username = ?";
   const queryArr = [username];
 
   try {
     const results = await dbQuery(sql, queryArr);
-
-    req.currentUser = {
-      ...req.currentUser,
-      currentUserGroup: results[0].usergroup,
-    };
-    next();
+    if (results[0].active === 1) {
+      req.currentUser = {
+        ...req.currentUser,
+        currentUserGroup: results[0].usergroup,
+        currentUserActive: results[0].active,
+      };
+      next();
+    } else {
+      res.status(403).send("User account is not active");
+    }
     // const { username: dbUser, password: dbPass, active: dbActive } = results[0];
   } catch (error) {
     res.status(404).send(error);
@@ -47,7 +51,7 @@ const getCurrUserGroup = async (req, res, next) => {
 
 const auth = {
   verifyToken,
-  getCurrUserGroup,
+  getUserGrpAndVerifyActive,
 };
 
 module.exports = auth;
