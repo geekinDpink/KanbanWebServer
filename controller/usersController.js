@@ -262,7 +262,9 @@ const updateUserDetails = async (req, res, next) => {
     ) {
       userUpdate(password, saltRounds, email, myUsername, res);
     } else {
-      if (invalidUsername) {
+      if (username !== myUsername) {
+        res.status(404).send("Not authorised to edit other users"); // usergroup is not admin and field not editing own field
+      } else if (invalidUsername) {
         res.status(404).send(invalidUsername);
       } else if (invalidEmail) {
         res.status(404).send(invalidEmail);
