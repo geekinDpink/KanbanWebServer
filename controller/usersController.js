@@ -200,7 +200,6 @@ const updateUserDetails = async (req, res, next) => {
     // hash password and save to db
     let hashpwd = pwd ? await bcrypt.hash(pwd, saltRnd) : null;
 
-    // TODO need to catch username not valid
     try {
       const sql =
         "UPDATE kanban.useraccounts SET password = COALESCE(?,password), email = ?, usergroup = ?, active = ? WHERE username = ?";
