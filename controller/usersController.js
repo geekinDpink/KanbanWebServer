@@ -86,11 +86,9 @@ const findUser = async (req, res, next) => {
     // issue token only to active user, token undefined for inactive user; undefined will be omitted from res
     if (dbActive && isMatch) {
       // store username and usergroup in token
-      var token = jwt.sign(
-        { username: dbUser },
-        process.env.JWT_SECRET
-        //{ expiresIn: "1m" }
-      );
+      var token = jwt.sign({ username: dbUser }, process.env.JWT_SECRET, {
+        expiresIn: "2h",
+      });
       // results[0].token = token;
       // res.send(results);
       res.status(200).json({
