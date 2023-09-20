@@ -231,7 +231,6 @@ const updateUserDetails = async (req, res, next) => {
   if (myUserGroup.toLowerCase().split(",").includes("admin")) {
     // only admin can update usergroup field and other users
     if (!invalidPassword && saltRounds && !invalidEmail && !invalidUsername) {
-      console.log("update by admin1");
       adminUpdate(
         password,
         saltRounds,
