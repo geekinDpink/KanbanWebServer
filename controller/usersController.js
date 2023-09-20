@@ -295,7 +295,11 @@ const getAllUser = async (req, res, next) => {
       const sql = "SELECT * FROM useraccounts";
       const queryArr = [];
       const results = await dbQuery(sql, queryArr);
-      res.status(200).send(results);
+      if (results.length > 0) {
+        res.status(200).send(results);
+      } else {
+        res.status(404).send("No record found");
+      }
     } catch (error) {
       res.status(500).send("Database transaction/connection error");
     }
@@ -317,7 +321,11 @@ const getUserById = async (req, res, next) => {
       const sql = "SELECT * FROM useraccounts WHERE username = ?";
       const queryArr = [username2];
       const results = await dbQuery(sql, queryArr);
-      res.status(200).send(results);
+      if (results.length > 0) {
+        res.status(200).send(results);
+      } else {
+        res.status(404).send("No record found");
+      }
     } catch (error) {
       res.status(500).send("Database transaction/connection error");
     }
@@ -348,7 +356,11 @@ const getMyUser = async (req, res, next) => {
       const sql = "SELECT * FROM useraccounts WHERE username = ?";
       const queryArr = [username2];
       const results = await dbQuery(sql, queryArr);
-      res.status(200).send(results);
+      if (results.length > 0) {
+        res.status(200).send(results);
+      } else {
+        res.status(404).send("No record found");
+      }
     } catch (error) {
       res.status(500).send("Database transaction/connection error");
     }
