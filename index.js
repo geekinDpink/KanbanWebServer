@@ -36,13 +36,19 @@ router
 router
   .route("/users")
   .post(verifyToken, getUserGrpAndVerifyActive, usersController.getAllUser); // admin only
-router.route("/user").get(verifyToken, usersController.getMyUser);
+router
+  .route("/user")
+  .get(verifyToken, getUserGrpAndVerifyActive, usersController.getMyUser);
 router
   .route("/user")
   .post(verifyToken, getUserGrpAndVerifyActive, usersController.getUserById); // admin only
 router
   .route("/usergroups")
-  .get(verifyToken, usergroupsController.getAllUserGroups);
+  .get(
+    verifyToken,
+    getUserGrpAndVerifyActive,
+    usergroupsController.getAllUserGroups
+  );
 router
   .route("/usergroups")
   .post(
