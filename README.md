@@ -1,7 +1,6 @@
 Error Handling: Missing Params - 400, Authorized users, DB Query error [test case: wrong dbconfig] - 500, JWT sign
 
 TODO
-TODO check user active middleware?
 TODO Add expiry and refresh token
 TODO DB Query Error Handling - no record for login
 TODO Update cannot find matching records
@@ -18,6 +17,7 @@ From token, decrpyt to get username and to get query for userroles
 Password contains special char, upper and lower
 Add Checkgroup function
 Refactor admin check from substring to string
+check user active middleware
 
 Optional
 catchasyncerror wrapper
