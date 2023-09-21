@@ -385,10 +385,16 @@ const checkGroup = async (req, res, next) => {
   if (username) {
     try {
       const results = await dbQuery(sql, queryArr);
-      if (results.length > 0) {
-        res.status(200).send("User Exists");
+      if (
+        results.length > 0 &&
+        results[0].usergroup
+          .toLowerCase()
+          .split(",")
+          .includes(usergroup.toLowerCase())
+      ) {
+        res.status(200).send("Yes");
       } else {
-        res.status(404).send("No existing users");
+        res.status(404).send("No");
       }
       console.log(results);
     } catch (error) {
