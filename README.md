@@ -25,6 +25,7 @@ Send JWT in cookies
 Cookie Parser
 
 CORS to protect what? localhost:3000 and credential
+whitelist resource
 Protect nodejs from unauthorised usage
 
 JWT purpose?
