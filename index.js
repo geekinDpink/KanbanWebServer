@@ -15,8 +15,8 @@ const port = config.port;
 
 const app = express();
 app.use(express.json());
-app.use(cors());
-app.use(bodyParser.urlencoded({ extended: true })); // Setup the body parser to handle form submits
+app.use(cors({ origin: "http://localhost:3000" }));
+app.use(bodyParser.urlencoded({ extended: true })); // Parse json in HTTP Request bodies from URL
 
 router.route("/login").post(usersController.findUser);
 router

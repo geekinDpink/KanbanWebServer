@@ -103,7 +103,7 @@ const findUser = async (req, res, next) => {
           res.status(403).json({
             status: "Fail",
             token: undefined,
-            remarks: "Invalid password",
+            remarks: "Invalid username/password",
           });
         } else if (!dbActive) {
           res.status(404).json({
@@ -123,7 +123,7 @@ const findUser = async (req, res, next) => {
       res.status(404).json({
         status: "Fail",
         token: undefined,
-        remarks: "Invalid username",
+        remarks: "Invalid username/password",
       });
     }
   } catch (error) {
@@ -304,7 +304,7 @@ const getAllUser = async (req, res, next) => {
       res.status(500).send("Database transaction/connection error");
     }
   } else {
-    return res.status(403).send("User is not authorized to access"); // not authorized
+    return res.status(403).send("Not authorized"); // not authorized
   }
 };
 
@@ -378,7 +378,7 @@ const getMyUser = async (req, res, next) => {
 // Check if usergroup
 //////////////////////////////////
 const checkGroup = async (req, res, next) => {
-  const { username } = req.body;
+  const { username, usergroup } = req.body;
   const sql = "SELECT usergroup FROM useraccounts WHERE username = ?";
   const queryArr = [username];
 
@@ -386,7 +386,7 @@ const checkGroup = async (req, res, next) => {
     try {
       const results = await dbQuery(sql, queryArr);
       if (results.length > 0) {
-        res.status(200).send(results);
+        res.status(200).send("User Exists");
       } else {
         res.status(404).send("No existing users");
       }
