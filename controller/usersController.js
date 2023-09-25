@@ -1,5 +1,7 @@
-const { dbQuery } = require("../config/dbConfig");const jwt = require("jsonwebtoken");
-const bcrypt = require("bcrypt"); // TODO change to bcryptjsconst jwt = require("jsonwebtoken");const config = require("../config/config");const saltRounds = config.saltRound; // return int as string
+const { dbQuery } = require("../config/dbConfig");
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcrypt");
+
 ////////////////////////////////////////////////////////////
 // Functions for Authentication (token valid and isActive) and Authorisation (isAdmin)
 /////////////////////////////////////////////////////////
@@ -350,10 +352,10 @@ const updateUserDetails = async (req, res, next) => {
 // Only Admin can find all users
 ////////////////////////////////////////////////////////////////
 const getAllUser = async (req, res, next) => {
-  const validUsername = await checkValidUser(req);
-  const isAdmin = await checkGroup(validUsername, "admin");
+  const myUsername = await checkValidUser(req);
+  const isAdmin = await checkGroup(myUsername, "admin");
 
-  if (validUsername && isAdmin) {
+  if (myUsername && isAdmin) {
     // check if the user doing the updating is admin
     // change to lowercase, convert to arr, check for admin
     try {
@@ -378,8 +380,8 @@ const getAllUser = async (req, res, next) => {
 ////////////////////////////////////////////////////////////////
 const getUserById = async (req, res, next) => {
   const { username } = req.body;
-  const validUsername = await checkValidUser(req);
-  const isAdmin = await checkGroup(validUsername, "admin");
+  const myUsername = await checkValidUser(req);
+  const isAdmin = await checkGroup(myUsername, "admin");
 
   // find user by username
   let queryDBUserById = async (username2, res) => {
@@ -399,7 +401,7 @@ const getUserById = async (req, res, next) => {
 
   // admin find other user details
   // change to lowercase, convert to arr, check for admin
-  if (validUsername && isAdmin) {
+  if (myUsername && isAdmin) {
     if (username) {
       queryDBUserById(username, res);
     } else {
