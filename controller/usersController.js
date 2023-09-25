@@ -354,8 +354,6 @@ const updateUserDetails = async (req, res, next) => {
 const getAllUser = async (req, res, next) => {
   const validUsername = await checkValidUser(req);
   const isAdmin = await checkGroup(validUsername, "admin");
-  console.log(validUsername);
-  console.log(isAdmin);
 
   if (validUsername && isAdmin) {
     // check if the user doing the updating is admin

@@ -1,4 +1,5 @@
-const express = require("express");const session = require("express-session");
+const express = require("express");
+const session = require("express-session");
 const bodyParser = require("body-parser");
 const config = require("./config/config");
 const cors = require("cors");
@@ -36,9 +37,7 @@ router.route("/users").post(usersController.getAllUser); // admin only
 router
   .route("/user")
   .get(verifyToken, getUserGrpAndVerifyActive, usersController.getMyUser);
-router
-  .route("/user")
-  .post(verifyToken, getUserGrpAndVerifyActive, usersController.getUserById); // admin only
+router.route("/user").post(usersController.getUserById); // admin only
 router
   .route("/usergroups")
   .get(
