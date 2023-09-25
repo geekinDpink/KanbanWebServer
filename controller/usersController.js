@@ -1,5 +1,7 @@
-const { dbQuery } = require("../config/dbConfig");const jwt = require("jsonwebtoken");
-const bcrypt = require("bcrypt"); // TODO change to bcryptjsconst jwt = require("jsonwebtoken");const config = require("../config/config");const saltRounds = config.saltRound; // return int as string////////////////////////////////////////////////////////////
+const { dbQuery } = require("../config/dbConfig");
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcrypt"); // TODO change to bcryptjsconst jwt = require("jsonwebtoken");const config = require("../config/config");const saltRounds = config.saltRound; // return int as string
+////////////////////////////////////////////////////////////
 // Functions for Authentication (token valid and isActive) and Authorisation (isAdmin)
 /////////////////////////////////////////////////////////
 const checkValidUser = async (req) => {
@@ -14,9 +16,8 @@ const checkValidUser = async (req) => {
       console.log("verifyResOfJWT2", verifyJWTRes);
       queryArr = [verifyJWTRes.username];
     } catch (error) {
-      // console.log("catch verify err", error);
       //res.sendStatus(403).send("Invalid Token");
-      return false;
+      return null;
     }
     try {
       const sql = "SELECT * FROM useraccounts WHERE username = ?";
@@ -24,17 +25,48 @@ const checkValidUser = async (req) => {
       const { active: dbActive } = results[0];
       // results.length > 0 is optional as if no result, error will be catch when destructure active
       if (results.length > 0 && dbActive) {
-        return true;
+        return queryArr[0];
       } else {
         //res.status(404).send("Invalid token");
-        return false;
+        return null;
       }
     } catch (error) {
       //res.status(500).send("Database transaction/connection error");
-      return false;
+      return null;
     }
   } else {
     //res.sendStatus(401).send("Missing Token");
+    return null;
+  }
+};
+
+const checkGroup = async (username, groupName) => {
+  const sql = "SELECT usergroup FROM useraccounts WHERE username = ?";
+  const queryArr = [username];
+
+  if (username) {
+    try {
+      const results = await dbQuery(sql, queryArr);
+      if (
+        results.length > 0 &&
+        results[0].usergroup
+          .toLowerCase()
+          .split(",")
+          .includes(groupName.toLowerCase())
+      ) {
+        return true;
+        // res.status(200).send("Yes");
+      } else {
+        return false;
+        // res.status(404).send("No");
+      }
+      console.log(results);
+    } catch (error) {
+      // res.status(404).send("Database transaction/connection error");
+      return false;
+    }
+  } else {
+    // res.status(404).send("Invalid Request due to missing parameters");
     return false;
   }
 };
@@ -317,12 +349,15 @@ const updateUserDetails = async (req, res, next) => {
 };
 
 ////////////////////////////////////////////////////////////////
-// Find all users
+// Only Admin can find all users
 ////////////////////////////////////////////////////////////////
 const getAllUser = async (req, res, next) => {
-  const isValidUser = await checkValidUser(req);
-  console.log(isValidUser);
-  if (isValidUser) {
+  const validUsername = await checkValidUser(req);
+  const isAdmin = await checkGroup(validUsername, "admin");
+  console.log(validUsername);
+  console.log(isAdmin);
+
+  if (validUsername && isAdmin) {
     // check if the user doing the updating is admin
     // change to lowercase, convert to arr, check for admin
     try {
@@ -347,7 +382,8 @@ const getAllUser = async (req, res, next) => {
 ////////////////////////////////////////////////////////////////
 const getUserById = async (req, res, next) => {
   const { username } = req.body;
-  const { currentUserGroup: myUserGroup } = req.currentUser;
+  const validUsername = await checkValidUser(req);
+  const isAdmin = await checkGroup(validUsername, "admin");
 
   // find user by username
   let queryDBUserById = async (username2, res) => {
@@ -367,7 +403,7 @@ const getUserById = async (req, res, next) => {
 
   // admin find other user details
   // change to lowercase, convert to arr, check for admin
-  if (myUserGroup.toLowerCase().split(",").includes("admin")) {
+  if (validUsername && isAdmin) {
     if (username) {
       queryDBUserById(username, res);
     } else {
@@ -411,7 +447,7 @@ const getMyUser = async (req, res, next) => {
 //////////////////////////////////
 // Check if usergroup
 //////////////////////////////////
-const checkGroup = async (req, res, next) => {
+const checkGroup2 = async (req, res, next) => {
   const { username, usergroup } = req.body;
   const sql = "SELECT usergroup FROM useraccounts WHERE username = ?";
   const queryArr = [username];
@@ -446,5 +482,5 @@ exports.usersController = {
   getAllUser: getAllUser,
   getUserById: getUserById,
   getMyUser: getMyUser,
-  checkGroup: checkGroup,
+  checkGroup: checkGroup2,
 };
