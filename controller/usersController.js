@@ -1,5 +1,4 @@
-const { dbQuery } = require("../config/dbConfig");
-const jwt = require("jsonwebtoken");
+const { dbQuery } = require("../config/dbConfig");const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt"); // TODO change to bcryptjsconst jwt = require("jsonwebtoken");const config = require("../config/config");const saltRounds = config.saltRound; // return int as string
 ////////////////////////////////////////////////////////////
 // Functions for Authentication (token valid and isActive) and Authorisation (isAdmin)
@@ -60,7 +59,6 @@ const checkGroup = async (username, groupName) => {
         return false;
         // res.status(404).send("No");
       }
-      console.log(results);
     } catch (error) {
       // res.status(404).send("Database transaction/connection error");
       return false;
