@@ -1,4 +1,5 @@
-const jwt = require("jsonwebtoken");const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcrypt");
 const config = require("../config/config");
 const { dbQuery } = require("../config/dbConfig");
 
@@ -330,6 +331,7 @@ const updateUserDetails = async (req, res, next) => {
   } else {
     // user can only update his own password and email, hence do a check on username = myusername, and update with myUsername instead of username from req body
     if (
+      myUsername &&
       !invalidPassword &&
       saltRounds &&
       !invalidEmail &&
@@ -337,8 +339,10 @@ const updateUserDetails = async (req, res, next) => {
     ) {
       userUpdate(password, saltRounds, email, myUsername, res);
     } else {
-      if (username !== myUsername) {
-        res.status(404).send("Not authorised to edit other users"); // usergroup is not admin and field not editing own field
+      if (!myUsername) {
+        res.status(403).send("Not authorised");
+      } else if (username !== myUsername) {
+        res.status(403).send("Not authorised to edit other users"); // usergroup is not admin and field not editing own field
       } else if (invalidUsername) {
         res.status(404).send(invalidUsername);
       } else if (invalidEmail) {
