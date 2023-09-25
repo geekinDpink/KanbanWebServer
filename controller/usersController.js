@@ -1,9 +1,43 @@
-const { dbQuery } = require("../config/dbConfig");
-const bcrypt = require("bcrypt"); // TODO change to bcryptjs
-const jwt = require("jsonwebtoken");
-const config = require("../config/config");
+const { dbQuery } = require("../config/dbConfig");const jwt = require("jsonwebtoken");
+const bcrypt = require("bcrypt"); // TODO change to bcryptjsconst jwt = require("jsonwebtoken");const config = require("../config/config");const saltRounds = config.saltRound; // return int as string////////////////////////////////////////////////////////////
+// Functions for Authentication (token valid and isActive) and Authorisation (isAdmin)
+/////////////////////////////////////////////////////////
+const checkValidUser = async (req) => {
+  const authHeader = req.headers.authorization;
 
-const saltRounds = config.saltRound; // return int as string
+  if (authHeader) {
+    const token = authHeader.split(" ")[1];
+    let verifyJWTRes = {};
+    let queryArr = [];
+    try {
+      verifyJWTRes = await jwt.verify(token, process.env.JWT_SECRET);
+      console.log("verifyResOfJWT2", verifyJWTRes);
+      queryArr = [verifyJWTRes.username];
+    } catch (error) {
+      // console.log("catch verify err", error);
+      //res.sendStatus(403).send("Invalid Token");
+      return false;
+    }
+    try {
+      const sql = "SELECT * FROM useraccounts WHERE username = ?";
+      const results = await dbQuery(sql, queryArr);
+      const { active: dbActive } = results[0];
+      // results.length > 0 is optional as if no result, error will be catch when destructure active
+      if (results.length > 0 && dbActive) {
+        return true;
+      } else {
+        //res.status(404).send("Invalid token");
+        return false;
+      }
+    } catch (error) {
+      //res.status(500).send("Database transaction/connection error");
+      return false;
+    }
+  } else {
+    //res.sendStatus(401).send("Missing Token");
+    return false;
+  }
+};
 
 ////////////////////////////////////////////////////////////
 // Functions for validating inputs
@@ -286,11 +320,11 @@ const updateUserDetails = async (req, res, next) => {
 // Find all users
 ////////////////////////////////////////////////////////////////
 const getAllUser = async (req, res, next) => {
-  let { currentUserGroup: myUserGroup } = req.currentUser;
-
-  // check if the user doing the updating is admin
-  // change to lowercase, convert to arr, check for admin
-  if (myUserGroup.toLowerCase().split(",").includes("admin")) {
+  const isValidUser = await checkValidUser(req);
+  console.log(isValidUser);
+  if (isValidUser) {
+    // check if the user doing the updating is admin
+    // change to lowercase, convert to arr, check for admin
     try {
       const sql = "SELECT * FROM useraccounts";
       const queryArr = [];
@@ -304,7 +338,7 @@ const getAllUser = async (req, res, next) => {
       res.status(500).send("Database transaction/connection error");
     }
   } else {
-    return res.status(403).send("Not authorized"); // not authorized
+    res.status(403).send("Not authorised");
   }
 };
 
