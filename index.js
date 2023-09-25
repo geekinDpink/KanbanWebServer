@@ -34,9 +34,7 @@ router
     usersController.updateUserDetails
   );
 router.route("/users").post(usersController.getAllUser); // admin only
-router
-  .route("/user")
-  .get(verifyToken, getUserGrpAndVerifyActive, usersController.getMyUser);
+router.route("/user").get(usersController.getMyUser);
 router.route("/user").post(usersController.getUserById); // admin only
 router
   .route("/usergroups")

@@ -416,7 +416,7 @@ const getUserById = async (req, res, next) => {
 // View Own User Details - My Profile Page
 ////////////////////////////////////////////////////////////////
 const getMyUser = async (req, res, next) => {
-  const { currentUsername: myUsername } = req.currentUser;
+  const myUsername = await checkValidUser(req);
 
   // find user by username
   let queryDBUserById = async (username2, res) => {
@@ -438,7 +438,7 @@ const getMyUser = async (req, res, next) => {
   if (myUsername) {
     queryDBUserById(myUsername, res);
   } else {
-    res.status(404).send("Invalid Request due to missing parameters");
+    res.status(404).send("Not authorised");
   }
 };
 
