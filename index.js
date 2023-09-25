@@ -1,5 +1,4 @@
-const express = require("express");
-const session = require("express-session");
+const express = require("express");const session = require("express-session");
 const bodyParser = require("body-parser");
 const config = require("./config/config");
 const cors = require("cors");
@@ -19,13 +18,7 @@ app.use(cors({ origin: "http://localhost:3000" }));
 app.use(bodyParser.urlencoded({ extended: true })); // Parse json in HTTP Request bodies from URL
 
 router.route("/login").post(usersController.findUser);
-router
-  .route("/register")
-  .post(
-    verifyToken,
-    getUserGrpAndVerifyActive,
-    usersController.registerNewUser
-  ); // admin only
+router.route("/register").post(usersController.registerNewUser); // admin only
 router
   .route("/users")
   .put(

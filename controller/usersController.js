@@ -1,6 +1,9 @@
+const jwt = require("jsonwebtoken");const bcrypt = require("bcrypt");
+const config = require("../config/config");
 const { dbQuery } = require("../config/dbConfig");
-const jwt = require("jsonwebtoken");
-const bcrypt = require("bcrypt");
+
+// return int as string
+const saltRounds = config.saltRound;
 
 ////////////////////////////////////////////////////////////
 // Functions for Authentication (token valid and isActive) and Authorisation (isAdmin)
@@ -209,15 +212,16 @@ const findUser = async (req, res, next) => {
 ////////////////////////////////////////////////////////////////
 const registerNewUser = async (req, res, next) => {
   const { username, password, email, usergroup } = req.body;
-  const { currentUserGroup: myUserGroup } = req.currentUser;
-  console.log("register", req.body);
+
+  const myUsername = await checkValidUser(req);
+  const isAdmin = await checkGroup(myUsername, "admin");
 
   const invalidUsername = await valUsername(username, true);
   const invalidEmail = await valEmail(email);
   const invalidPassword = await valPassword(password, true);
 
   // change to lowercase, convert to arr, check for admin
-  if (myUserGroup.toLowerCase().split(",").includes("admin")) {
+  if (myUsername && isAdmin) {
     if (!invalidUsername && !invalidEmail && !invalidPassword) {
       let hashpwd = await bcrypt.hash(password, saltRounds);
 
@@ -240,7 +244,7 @@ const registerNewUser = async (req, res, next) => {
       } else if (invalidPassword) {
         res.status(404).send(invalidPassword);
       } else {
-        res.status(404).send("Invalid Request");
+        res.status(404).send("Invalid Login");
       }
     }
   } else {
