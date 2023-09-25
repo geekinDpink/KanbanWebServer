@@ -19,13 +19,7 @@ app.use(bodyParser.urlencoded({ extended: true })); // Parse json in HTTP Reques
 
 router.route("/login").post(usersController.findUser);
 router.route("/register").post(usersController.registerNewUser); // admin only
-router
-  .route("/users")
-  .put(
-    verifyToken,
-    getUserGrpAndVerifyActive,
-    usersController.updateUserDetails
-  );
+router.route("/users").put(usersController.updateUserDetails);
 router.route("/users").post(usersController.getAllUser); // admin only
 router.route("/user").get(usersController.getMyUser);
 router.route("/user").post(usersController.getUserById); // admin only

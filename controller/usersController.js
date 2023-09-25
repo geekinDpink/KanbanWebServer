@@ -257,8 +257,8 @@ const registerNewUser = async (req, res, next) => {
 ////////////////////////////////////////////////////////////////
 const updateUserDetails = async (req, res, next) => {
   const { username, password, email, usergroup, active } = req.body;
-  const { currentUsername: myUsername, currentUserGroup: myUserGroup } =
-    req.currentUser;
+  const myUsername = await checkValidUser(req);
+  const isAdmin = await checkGroup(myUsername, "admin");
 
   const invalidUsername = await valUsername(username, false);
   const invalidEmail = await valEmail(email);
@@ -304,7 +304,7 @@ const updateUserDetails = async (req, res, next) => {
     }
   };
   // change to lowercase, convert to arr, check for admin
-  if (myUserGroup.toLowerCase().split(",").includes("admin")) {
+  if (myUsername && isAdmin) {
     // only admin can update usergroup field and other users
     if (!invalidPassword && saltRounds && !invalidEmail && !invalidUsername) {
       adminUpdate(
