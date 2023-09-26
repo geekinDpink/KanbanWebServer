@@ -1,9 +1,9 @@
-const express = require("express");const session = require("express-session");
+const express = require("express");
+const session = require("express-session");
 const bodyParser = require("body-parser");
 const config = require("./config/config");
 const cors = require("cors");
 
-const { verifyToken, getUserGrpAndVerifyActive } = require("./middleware/auth");
 const { usergroupsController } = require("./controller/usergroupsController");
 const { usersController } = require("./controller/usersController");
 
@@ -25,7 +25,6 @@ router.route("/user").get(usersController.getMyUser);
 router.route("/user").post(usersController.getUserById); // admin only
 router.route("/usergroups").get(usergroupsController.getAllUserGroups);
 router.route("/usergroups").post(usergroupsController.createUserGroup); // admin only
-router.route("/user/usergroup").post(verifyToken, usersController.checkGroup);
 
 app.use(router);
 

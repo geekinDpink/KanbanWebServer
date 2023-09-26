@@ -450,37 +450,6 @@ const getMyUser = async (req, res, next) => {
   }
 };
 
-//////////////////////////////////
-// Check if usergroup
-//////////////////////////////////
-const checkGroup2 = async (req, res, next) => {
-  const { username, usergroup } = req.body;
-  const sql = "SELECT usergroup FROM useraccounts WHERE username = ?";
-  const queryArr = [username];
-
-  if (username) {
-    try {
-      const results = await dbQuery(sql, queryArr);
-      if (
-        results.length > 0 &&
-        results[0].usergroup
-          .toLowerCase()
-          .split(",")
-          .includes(usergroup.toLowerCase())
-      ) {
-        res.status(200).send("Yes");
-      } else {
-        res.status(404).send("No");
-      }
-      console.log(results);
-    } catch (error) {
-      res.status(404).send("Database transaction/connection error");
-    }
-  } else {
-    res.status(404).send("Invalid Request due to missing parameters");
-  }
-};
-
 exports.usersController = {
   findUser: findUser,
   registerNewUser: registerNewUser,
@@ -488,5 +457,4 @@ exports.usersController = {
   getAllUser: getAllUser,
   getUserById: getUserById,
   getMyUser: getMyUser,
-  checkGroup: checkGroup2,
 };
