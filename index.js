@@ -23,6 +23,7 @@ router.route("/users").put(usersController.updateUserDetails);
 router.route("/users").post(usersController.getAllUser); // admin only
 router.route("/user").get(usersController.getMyUser);
 router.route("/user").post(usersController.getUserById); // admin only
+router.route("/user/admin").get(usersController.checkAdmin); // admin only
 router.route("/usergroups").get(usergroupsController.getAllUserGroups);
 router.route("/usergroups").post(usergroupsController.createUserGroup); // admin only
 

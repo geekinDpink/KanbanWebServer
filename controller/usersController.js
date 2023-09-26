@@ -450,6 +450,25 @@ const getMyUser = async (req, res, next) => {
   }
 };
 
+////////////////////////////////////////////////////////////////
+// Authentication and Authorisation Check for each page load
+////////////////////////////////////////////////////////////////
+const checkAdmin = async (req, res, next) => {
+  const myUsername = await checkValidUser(req);
+  const isAdmin = await checkGroup(myUsername, "admin");
+
+  // user can only search their own details
+  if (myUsername) {
+    if (isAdmin) {
+      res.status(200).send({ isAdmin: true });
+    } else {
+      res.status(200).send({ isAdmin: false });
+    }
+  } else {
+    res.status(403).send("Not authorised");
+  }
+};
+
 exports.usersController = {
   findUser: findUser,
   registerNewUser: registerNewUser,
@@ -457,4 +476,5 @@ exports.usersController = {
   getAllUser: getAllUser,
   getUserById: getUserById,
   getMyUser: getMyUser,
+  checkAdmin: checkAdmin,
 };
