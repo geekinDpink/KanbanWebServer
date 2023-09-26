@@ -71,9 +71,11 @@ const checkGroup = async (username, groupName) => {
   }
 };
 
+////////////////////////////////////////////////////////////
+// Get All Usergroups for Multiselect
+/////////////////////////////////////////////////////////
 const getAllUserGroups = async (req, res, next) => {
   const myUsername = await checkValidUser(req);
-  console.log("token username", myUsername);
   if (myUsername) {
     try {
       const sql = "SELECT * FROM usergroups";
@@ -88,6 +90,9 @@ const getAllUserGroups = async (req, res, next) => {
   }
 };
 
+////////////////////////////////////////////////////////////
+// Only Admin can create new user group
+/////////////////////////////////////////////////////////
 const createUserGroup = async (req, res, next) => {
   const { usergroup } = req.body;
 
