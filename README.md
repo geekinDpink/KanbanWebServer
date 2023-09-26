@@ -36,7 +36,7 @@ Usergroup?
 MVC model to ensure each tier perform its assigned task
 Webpack bundler - bundle code and JSX transpiler
 
-###Create DB and Table SQL Script
+###Create DB and Table (Useraccounts and Usergroups) SQL Script
 
 ```
 CREATE DATABASE IF NOT EXISTS `kanban` DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci;
@@ -61,4 +61,49 @@ INSERT INTO `usergroups` (`usergroup`) VALUES ('admin');
 INSERT INTO `usergroups` (`usergroup`) VALUES ('project manager');
 INSERT INTO `usergroups` (`usergroup`) VALUES ('project lead');
 INSERT INTO `usergroups` (`usergroup`) VALUES ('developer');
+
+```
+
+###Create Table (Application) SQL Script
+
+```
+CREATE TABLE IF NOT EXISTS `application` (
+  `App_Acronym` varchar(50) NOT NULL,
+  `App_Description` varchar(500) NOT NULL,
+  `App_Rnumber` int NOT NULL,
+  `App_startDate` varchar(50) DEFAULT NULL,
+  `App_endDate` varchar(100) DEFAULT NULL,
+  `App_permit_Open` varchar(100) DEFAULT NULL,
+  `App_permit_toDoList` varchar(100) DEFAULT NULL,
+  `App_permit_Doing` varchar(100) DEFAULT NULL,
+  `App_permit_Done` varchar(100) DEFAULT NULL,
+  PRIMARY KEY (`App_Acronym`),
+  UNIQUE KEY `App_Acronym_UNIQUE` (`App_Acronym`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+
+
+CREATE TABLE IF NOT EXISTS `plan` (
+  `Plan_MVP_name` int NOT NULL,
+  `Plan_startDate` varchar(50) DEFAULT NULL,
+  `Plan_endDate` varchar(50) DEFAULT NULL,
+  `Plan_app_Acronym` varchar(50) DEFAULT NULL,
+  PRIMARY KEY (`Plan_MVP_name`),
+  UNIQUE KEY `Plan_MVP_name_UNIQUE` (`Plan_MVP_name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+
+
+CREATE TABLE IF NOT EXISTS `task` (
+  `Task_name` varchar(50) NOT NULL,
+  `Task_description` varchar(500) DEFAULT NULL,
+  `Task_notes` varchar(500) DEFAULT NULL,
+  `Task_id` int NOT NULL,
+  `Task_plan` varchar(50) DEFAULT NULL,
+  `Task_app_Acronym` varchar(50) NOT NULL,
+  `Task_state` varchar(50) NOT NULL,
+  `Task_creator` varchar(50) NOT NULL,
+  `Task_owner` varchar(50) NOT NULL,
+  `Task_createDate` varchar(50) NOT NULL,
+  PRIMARY KEY (`Task_id`),
+  UNIQUE KEY `Task_id_UNIQUE` (`Task_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 ```
