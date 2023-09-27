@@ -108,6 +108,51 @@ const getAllApplication = async (req, res, next) => {
 /////////////////////////////////////////////////////////
 const createApplication = async (req, res, next) => {
   const myUsername = await checkValidUser(req);
+  const isProjectLead = await checkGroup(myUsername, "project lead");
+  if (myUsername && isProjectLead) {
+    try {
+      const {
+        App_Acronym,
+        App_Description,
+        App_Rnumber,
+        App_startDate,
+        App_endDate,
+        App_permit_create,
+        App_permit_Open,
+        App_permit_toDoList,
+        App_permit_Doing,
+        App_permit_Done,
+      } = req.body;
+      const sql =
+        "INSERT INTO applications (App_Acronym, App_Description, App_Rnumber, App_startDate, App_endDate, App_permit_Create, App_permit_Open, App_permit_toDoList, App_permit_Doing, App_permit_Done) VALUES (?,?,?,?,?,?,?,?,?,?)";
+      const queryArr = [
+        App_Acronym,
+        App_Description,
+        App_Rnumber,
+        App_startDate,
+        App_endDate,
+        App_permit_create,
+        App_permit_Open,
+        App_permit_toDoList,
+        App_permit_Doing,
+        App_permit_Done,
+      ];
+      const results = await dbQuery(sql, queryArr);
+      res.status(200).send(results);
+    } catch (error) {
+      console.log(error);
+      res.status(500).send("Database transaction/connection error");
+    }
+  } else {
+    res.status(403).send("Not authorised");
+  }
+};
+
+////////////////////////////////////////////////////////////
+// Edit Application
+/////////////////////////////////////////////////////////
+const editApplication = async (req, res, next) => {
+  const myUsername = await checkValidUser(req);
   console.log(myUsername);
   const isProjectLead = await checkGroup(myUsername, "project lead");
   console.log("isProjectLead", isProjectLead);
@@ -119,23 +164,25 @@ const createApplication = async (req, res, next) => {
         App_Rnumber,
         App_startDate,
         App_endDate,
+        App_permit_create,
         App_permit_Open,
         App_permit_toDoList,
         App_permit_Doing,
         App_permit_Done,
       } = req.body;
       const sql =
-        "INSERT INTO applications (`App_Acronym`, `App_Description`, `App_Rnumber`, `App_startDate`, `App_endDate`, `App_permit_Open`, `App_permit_toDoList`, `App_permit_Doing`, `App_permit_Done`) VALUES (?,?,?,?,?,?,?,?,?)";
+        "UPDATE applications SET App_Description = ?, App_Rnumber = ?, App_startDate = ?, App_endDate = ?, App_permit_Create=?, App_permit_Open=?, App_permit_toDoList = ?, App_permit_Doing = ?, App_permit_Done = ? WHERE App_Acronym = ?";
       const queryArr = [
-        App_Acronym,
         App_Description,
         App_Rnumber,
         App_startDate,
         App_endDate,
+        App_permit_create,
         App_permit_Open,
         App_permit_toDoList,
         App_permit_Doing,
         App_permit_Done,
+        App_Acronym,
       ];
       const results = await dbQuery(sql, queryArr);
       res.status(200).send(results);
@@ -150,6 +197,6 @@ const createApplication = async (req, res, next) => {
 exports.applicationsController = {
   getAllApplication,
   createApplication,
-
+  editApplication,
   //getApplicationByAcronym,
 };
