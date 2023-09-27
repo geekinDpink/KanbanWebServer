@@ -7,17 +7,14 @@ const jwt = require("jsonwebtoken");
 const checkValidUser = async (req) => {
   const authHeader = req.headers.authorization;
 
-  console.log("checkValidUser", authHeader);
   if (authHeader) {
     const token = authHeader.split(" ")[1];
     let verifyJWTRes = {};
     let queryArr = [];
     try {
       verifyJWTRes = await jwt.verify(token, process.env.JWT_SECRET);
-      console.log("verifyResOfJWTgrp", verifyJWTRes);
       queryArr = [verifyJWTRes.username];
     } catch (error) {
-      //res.sendStatus(403).send("Invalid Token");
       return null;
     }
     try {
@@ -28,15 +25,12 @@ const checkValidUser = async (req) => {
       if (results.length > 0 && dbActive) {
         return queryArr[0];
       } else {
-        //res.status(404).send("Invalid token");
         return null;
       }
     } catch (error) {
-      //res.status(500).send("Database transaction/connection error");
       return null;
     }
   } else {
-    //res.sendStatus(401).send("Missing Token");
     return null;
   }
 };
@@ -44,23 +38,10 @@ const checkValidUser = async (req) => {
 const checkGroup = async (username, groupName) => {
   const sql = "SELECT usergroup FROM useraccounts WHERE username = ?";
   const queryArr = [username];
-  console.log("checkgrp", username);
 
   if (username) {
     try {
       const results = await dbQuery(sql, queryArr);
-      console.log(results);
-
-      const y = groupName.toLowerCase();
-
-      const z = results[0].usergroup.toLowerCase().split(",");
-      console.log(y);
-      console.log(z);
-
-      const x = results[0].usergroup.toLowerCase().split(",").includes(y);
-
-      console.log("check you cb", x);
-
       if (
         results.length > 0 &&
         results[0].usergroup
@@ -69,17 +50,13 @@ const checkGroup = async (username, groupName) => {
           .includes(groupName.toLowerCase())
       ) {
         return true;
-        // res.status(200).send("Yes");
       } else {
         return false;
-        // res.status(404).send("No");
       }
     } catch (error) {
-      // res.status(404).send("Database transaction/connection error");
       return false;
     }
   } else {
-    // res.status(404).send("Invalid Request due to missing parameters");
     return false;
   }
 };
@@ -96,6 +73,7 @@ const getAllApplication = async (req, res, next) => {
       const results = await dbQuery(sql, queryArr);
       res.status(200).send(results);
     } catch (error) {
+      console.log(error);
       res.status(500).send("Database transaction/connection error");
     }
   } else {
@@ -153,9 +131,7 @@ const createApplication = async (req, res, next) => {
 /////////////////////////////////////////////////////////
 const editApplication = async (req, res, next) => {
   const myUsername = await checkValidUser(req);
-  console.log(myUsername);
   const isProjectLead = await checkGroup(myUsername, "project lead");
-  console.log("isProjectLead", isProjectLead);
   if (myUsername && isProjectLead) {
     try {
       const {
@@ -187,6 +163,7 @@ const editApplication = async (req, res, next) => {
       const results = await dbQuery(sql, queryArr);
       res.status(200).send(results);
     } catch (error) {
+      console.log(error);
       res.status(500).send("Database transaction/connection error");
     }
   } else {
