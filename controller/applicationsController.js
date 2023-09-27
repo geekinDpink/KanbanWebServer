@@ -71,7 +71,16 @@ const getAllApplication = async (req, res, next) => {
       const sql = "SELECT * FROM applications";
       const queryArr = [];
       const results = await dbQuery(sql, queryArr);
-      res.status(200).send(results);
+
+      // format start and end date to DD/MM/YYYY
+      const formatRes = results.map((app) => {
+        return {
+          ...app,
+          App_startDate: app.App_startDate.toLocaleDateString(),
+          App_endDate: app.App_endDate.toLocaleDateString(),
+        };
+      });
+      res.status(200).send(formatRes);
     } catch (error) {
       console.log(error);
       res.status(500).send("Database transaction/connection error");
@@ -175,5 +184,4 @@ exports.applicationsController = {
   getAllApplication,
   createApplication,
   editApplication,
-  //getApplicationByAcronym,
 };
