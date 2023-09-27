@@ -44,10 +44,23 @@ const checkValidUser = async (req) => {
 const checkGroup = async (username, groupName) => {
   const sql = "SELECT usergroup FROM useraccounts WHERE username = ?";
   const queryArr = [username];
+  console.log("checkgrp", username);
 
   if (username) {
     try {
       const results = await dbQuery(sql, queryArr);
+      console.log(results);
+
+      const y = groupName.toLowerCase();
+
+      const z = results[0].usergroup.toLowerCase().split(",");
+      console.log(y);
+      console.log(z);
+
+      const x = results[0].usergroup.toLowerCase().split(",").includes(y);
+
+      console.log("check you cb", x);
+
       if (
         results.length > 0 &&
         results[0].usergroup
@@ -72,7 +85,7 @@ const checkGroup = async (username, groupName) => {
 };
 
 ////////////////////////////////////////////////////////////
-// Get All Usergroups for Multiselect
+// Get All Application
 /////////////////////////////////////////////////////////
 const getAllApplication = async (req, res, next) => {
   const myUsername = await checkValidUser(req);
@@ -83,7 +96,51 @@ const getAllApplication = async (req, res, next) => {
       const results = await dbQuery(sql, queryArr);
       res.status(200).send(results);
     } catch (error) {
-      res.status(500).json(error);
+      res.status(500).send("Database transaction/connection error");
+    }
+  } else {
+    res.status(403).send("Not authorised");
+  }
+};
+
+////////////////////////////////////////////////////////////
+// Create Application
+/////////////////////////////////////////////////////////
+const createApplication = async (req, res, next) => {
+  const myUsername = await checkValidUser(req);
+  console.log(myUsername);
+  const isProjectLead = await checkGroup(myUsername, "project lead");
+  console.log("isProjectLead", isProjectLead);
+  if (myUsername && isProjectLead) {
+    try {
+      const {
+        App_Acronym,
+        App_Description,
+        App_Rnumber,
+        App_startDate,
+        App_endDate,
+        App_permit_Open,
+        App_permit_toDoList,
+        App_permit_Doing,
+        App_permit_Done,
+      } = req.body;
+      const sql =
+        "INSERT INTO applications (`App_Acronym`, `App_Description`, `App_Rnumber`, `App_startDate`, `App_endDate`, `App_permit_Open`, `App_permit_toDoList`, `App_permit_Doing`, `App_permit_Done`) VALUES (?,?,?,?,?,?,?,?,?)";
+      const queryArr = [
+        App_Acronym,
+        App_Description,
+        App_Rnumber,
+        App_startDate,
+        App_endDate,
+        App_permit_Open,
+        App_permit_toDoList,
+        App_permit_Doing,
+        App_permit_Done,
+      ];
+      const results = await dbQuery(sql, queryArr);
+      res.status(200).send(results);
+    } catch (error) {
+      res.status(500).send("Database transaction/connection error");
     }
   } else {
     res.status(403).send("Not authorised");
@@ -91,7 +148,8 @@ const getAllApplication = async (req, res, next) => {
 };
 
 exports.applicationsController = {
-  // createApplication,
   getAllApplication,
+  createApplication,
+
   //getApplicationByAcronym,
 };

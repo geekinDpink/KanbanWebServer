@@ -6,6 +6,9 @@ const cors = require("cors");
 
 const { usergroupsController } = require("./controller/usergroupsController");
 const { usersController } = require("./controller/usersController");
+const {
+  applicationsController,
+} = require("./controller/applicationsController");
 
 require("dotenv").config();
 
@@ -17,6 +20,9 @@ app.use(express.json());
 app.use(cors({ origin: "http://localhost:3000" }));
 app.use(bodyParser.urlencoded({ extended: true })); // Parse json in HTTP Request bodies from URL
 
+//////////////////////////////
+// Users
+//////////////////////////////
 router.route("/login").post(usersController.findUser);
 router.route("/register").post(usersController.registerNewUser); // admin only
 router.route("/users").put(usersController.updateUserDetails);
@@ -24,8 +30,18 @@ router.route("/users").post(usersController.getAllUser); // admin only
 router.route("/user").get(usersController.getMyUser);
 router.route("/user").post(usersController.getUserById); // admin only
 router.route("/user/admin").get(usersController.checkAdmin); // admin only
+
+/////////////////////////////////
+// Usergroups
+////////////////////////////////
 router.route("/usergroups").get(usergroupsController.getAllUserGroups);
 router.route("/usergroups").post(usergroupsController.createUserGroup); // admin only
+
+/////////////////////////////////
+// Applications
+////////////////////////////////
+router.route("/apps").get(applicationsController.getAllApplication);
+router.route("/app").post(applicationsController.createApplication);
 
 app.use(router);
 
