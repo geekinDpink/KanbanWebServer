@@ -1,6 +1,4 @@
-Error Handling: Missing Params - 400, Authorized users, DB Query error [test case: wrong dbconfig] - 500, JWT sign
-
-TODO
+Error Handling: Missing Params - 400, Authorized users, DB Query error [test case: wrong dbconfig] - 500, JWT signTODO
 TODO Add expiry and refresh token
 TODO DB Query Error Handling - no record for login
 TODO Update cannot find matching records
@@ -67,13 +65,16 @@ INSERT INTO `usergroups` (`usergroup`) VALUES ('developer');
 ###Create Table (Application) SQL Script
 
 ```
-CREATE TABLE IF NOT EXISTS `application` (
+USE `kanban`;
+
+CREATE TABLE IF NOT EXISTS `applications` (
   `App_Acronym` varchar(50) NOT NULL,
   `App_Description` varchar(500) NOT NULL,
   `App_Rnumber` int NOT NULL,
-  `App_startDate` varchar(50) DEFAULT NULL,
-  `App_endDate` varchar(100) DEFAULT NULL,
+  `App_startDate` date DEFAULT NULL,
+  `App_endDate` date DEFAULT NULL,
   `App_permit_Open` varchar(100) DEFAULT NULL,
+  `App_permit_Create` varchar(100) DEFAULT NULL,
   `App_permit_toDoList` varchar(100) DEFAULT NULL,
   `App_permit_Doing` varchar(100) DEFAULT NULL,
   `App_permit_Done` varchar(100) DEFAULT NULL,
@@ -82,7 +83,7 @@ CREATE TABLE IF NOT EXISTS `application` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 
 
-CREATE TABLE IF NOT EXISTS `plan` (
+CREATE TABLE IF NOT EXISTS `plans` (
   `Plan_MVP_name` int NOT NULL,
   `Plan_startDate` varchar(50) DEFAULT NULL,
   `Plan_endDate` varchar(50) DEFAULT NULL,
@@ -92,7 +93,7 @@ CREATE TABLE IF NOT EXISTS `plan` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 
 
-CREATE TABLE IF NOT EXISTS `task` (
+CREATE TABLE IF NOT EXISTS `tasks` (
   `Task_name` varchar(50) NOT NULL,
   `Task_description` varchar(500) DEFAULT NULL,
   `Task_notes` varchar(500) DEFAULT NULL,
