@@ -108,15 +108,7 @@ const getAppByAcronym = async (req, res, next) => {
         const results = await dbQuery(sql, queryArr);
 
         if (results.length > 0) {
-          // format start and end date to DD/MM/YYYY
-          const formatRes = results.map((app) => {
-            return {
-              ...app,
-              App_startDate: app.App_startDate?.toLocaleDateString(),
-              App_endDate: app.App_endDate?.toLocaleDateString(),
-            };
-          });
-          res.status(200).send(formatRes);
+          res.status(200).send(results);
         } else {
           res.status(404).send("No record found");
         }
