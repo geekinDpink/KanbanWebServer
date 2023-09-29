@@ -41,6 +41,7 @@ router.route("/usergroups").post(usergroupsController.createUserGroup); // admin
 // Applications
 ////////////////////////////////
 router.route("/apps").get(applicationsController.getAllApplication);
+router.route("/app/acronym").post(applicationsController.getAppByAcronym);
 router.route("/app").post(applicationsController.createApplication);
 router.route("/app").put(applicationsController.editApplication);
 

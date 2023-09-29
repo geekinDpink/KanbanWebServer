@@ -72,18 +72,60 @@ const getAllApplication = async (req, res, next) => {
       const queryArr = [];
       const results = await dbQuery(sql, queryArr);
 
-      // format start and end date to DD/MM/YYYY
-      const formatRes = results.map((app) => {
-        return {
-          ...app,
-          App_startDate: app.App_startDate?.toLocaleDateString(),
-          App_endDate: app.App_endDate?.toLocaleDateString(),
-        };
-      });
-      res.status(200).send(formatRes);
+      if (results.length > 0) {
+        // format start and end date to DD/MM/YYYY
+        const formatRes = results.map((app) => {
+          return {
+            ...app,
+            App_startDate: app.App_startDate?.toLocaleDateString(),
+            App_endDate: app.App_endDate?.toLocaleDateString(),
+          };
+        });
+        res.status(200).send(formatRes);
+      } else {
+        res.status(404).send("No record found");
+      }
     } catch (error) {
       console.log(error);
       res.status(500).send("Database transaction/connection error");
+    }
+  } else {
+    res.status(403).send("Not authorised");
+  }
+};
+
+////////////////////////////////////////////////////////////
+// Get Application By Acronym
+/////////////////////////////////////////////////////////
+const getAppByAcronym = async (req, res, next) => {
+  const myUsername = await checkValidUser(req);
+  if (myUsername) {
+    const { App_Acronym } = req.body;
+    if (App_Acronym) {
+      try {
+        const sql = "SELECT * FROM applications WHERE App_Acronym = ?";
+        const queryArr = [App_Acronym];
+        const results = await dbQuery(sql, queryArr);
+
+        if (results.length > 0) {
+          // format start and end date to DD/MM/YYYY
+          const formatRes = results.map((app) => {
+            return {
+              ...app,
+              App_startDate: app.App_startDate?.toLocaleDateString(),
+              App_endDate: app.App_endDate?.toLocaleDateString(),
+            };
+          });
+          res.status(200).send(formatRes);
+        } else {
+          res.status(404).send("No record found");
+        }
+      } catch (error) {
+        console.log(error);
+        res.status(500).send("Database transaction/connection error");
+      }
+    } else {
+      res.status(404).send("Invalid Request due to missing parameters");
     }
   } else {
     res.status(403).send("Not authorised");
@@ -182,6 +224,7 @@ const editApplication = async (req, res, next) => {
 
 exports.applicationsController = {
   getAllApplication,
+  getAppByAcronym,
   createApplication,
   editApplication,
 };
