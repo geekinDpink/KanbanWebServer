@@ -1,6 +1,4 @@
-const { dbQuery } = require("../config/dbConfig");
-const jwt = require("jsonwebtoken");
-
+const { dbQuery } = require("../config/dbConfig");const jwt = require("jsonwebtoken");
 ////////////////////////////////////////////////////////////
 // Functions for Authentication (token valid and isActive) and Authorisation (isAdmin)
 /////////////////////////////////////////////////////////
@@ -92,18 +90,36 @@ const getAllTask = async (req, res, next) => {
 const createTask = async (req, res, next) => {
   const myUsername = await checkValidUser(req);
   if (myUsername) {
+    const {
+      Task_name,
+      Task_description,
+      Task_notes,
+      Task_id,
+      Task_plan,
+      Task_app_Acronym,
+      Task_state,
+      Task_creator,
+      Task_owner,
+      Task_createDate,
+    } = req.body;
     try {
       const sql =
         "INSERT INTO tasks (Task_name, Task_description, Task_notes, Task_id, Task_plan, Task_app_Acronym, Task_state, Task_creator, Task_owner, Task_createDate) VALUES (?,?,?,?,?,?,?,?,?,?)";
 
-      const queryArr = [];
+      const queryArr = [
+        Task_name,
+        Task_description,
+        Task_notes,
+        Task_id,
+        Task_plan,
+        Task_app_Acronym,
+        Task_state,
+        Task_creator,
+        Task_owner,
+        Task_createDate,
+      ];
       const results = await dbQuery(sql, queryArr);
-
-      if (results.length > 0) {
-        res.status(200).send(results);
-      } else {
-        res.status(404).send("No record found");
-      }
+      res.status(200).send(results);
     } catch (error) {
       console.log(error);
       res.status(500).send("Database transaction/connection error");

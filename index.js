@@ -50,6 +50,7 @@ router.route("/app").put(applicationsController.editApplication);
 // Task
 ////////////////////////////////
 router.route("/tasks").get(tasksController.getAllTask);
+router.route("/task").post(tasksController.createTask);
 
 app.use(router);
 
