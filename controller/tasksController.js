@@ -86,9 +86,36 @@ const getAllTask = async (req, res, next) => {
   }
 };
 
+////////////////////////////////////////////////////////////
+// Create Task
+/////////////////////////////////////////////////////////
+const createTask = async (req, res, next) => {
+  const myUsername = await checkValidUser(req);
+  if (myUsername) {
+    try {
+      const sql =
+        "INSERT INTO tasks (Task_name, Task_description, Task_notes, Task_id, Task_plan, Task_app_Acronym, Task_state, Task_creator, Task_owner, Task_createDate) VALUES (?,?,?,?,?,?,?,?,?,?)";
+
+      const queryArr = [];
+      const results = await dbQuery(sql, queryArr);
+
+      if (results.length > 0) {
+        res.status(200).send(results);
+      } else {
+        res.status(404).send("No record found");
+      }
+    } catch (error) {
+      console.log(error);
+      res.status(500).send("Database transaction/connection error");
+    }
+  } else {
+    res.status(403).send("Not authorised");
+  }
+};
+
 exports.tasksController = {
   getAllTask,
   // getAppByAcronym,
-  // createApplication,
+  createTask,
   // editApplication,
 };
