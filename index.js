@@ -9,6 +9,7 @@ const { usersController } = require("./controller/usersController");
 const {
   applicationsController,
 } = require("./controller/applicationsController");
+const { tasksController } = require("./controller/tasksController");
 
 require("dotenv").config();
 
@@ -44,6 +45,11 @@ router.route("/apps").get(applicationsController.getAllApplication);
 router.route("/app/acronym").post(applicationsController.getAppByAcronym);
 router.route("/app").post(applicationsController.createApplication);
 router.route("/app").put(applicationsController.editApplication);
+
+/////////////////////////////////
+// Task
+////////////////////////////////
+router.route("/tasks").get(tasksController.getAllTask);
 
 app.use(router);
 
