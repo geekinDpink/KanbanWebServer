@@ -76,8 +76,8 @@ const getAllApplication = async (req, res, next) => {
       const formatRes = results.map((app) => {
         return {
           ...app,
-          App_startDate: app.App_startDate.toLocaleDateString(),
-          App_endDate: app.App_endDate.toLocaleDateString(),
+          App_startDate: app.App_startDate?.toLocaleDateString(),
+          App_endDate: app.App_endDate?.toLocaleDateString(),
         };
       });
       res.status(200).send(formatRes);
