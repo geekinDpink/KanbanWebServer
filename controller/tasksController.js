@@ -1,7 +1,10 @@
-const { dbQuery } = require("../config/dbConfig");const jwt = require("jsonwebtoken");
+const { dbQuery } = require("../config/dbConfig");
+const jwt = require("jsonwebtoken");
+
 ////////////////////////////////////////////////////////////
 // Functions for Authentication (token valid and isActive) and Authorisation (isAdmin)
 /////////////////////////////////////////////////////////
+
 const checkValidUser = async (req) => {
   const authHeader = req.headers.authorization;
 
@@ -89,6 +92,7 @@ const getAllTask = async (req, res, next) => {
 /////////////////////////////////////////////////////////
 const createTask = async (req, res, next) => {
   const myUsername = await checkValidUser(req);
+  // TOOO: Add checkgroup is PL
   if (myUsername) {
     const {
       Task_name,
@@ -129,9 +133,54 @@ const createTask = async (req, res, next) => {
   }
 };
 
+////////////////////////////////////////////////////////////
+// Edit Task
+/////////////////////////////////////////////////////////
+const editTask = async (req, res, next) => {
+  const myUsername = await checkValidUser(req);
+  if (myUsername) {
+    const {
+      Task_name,
+      Task_description,
+      Task_notes,
+      Task_id,
+      Task_plan,
+      Task_app_Acronym,
+      Task_state,
+      Task_creator,
+      Task_owner,
+      Task_createDate,
+    } = req.body;
+    try {
+      const sql =
+        "UPDATE tasks SET Task_name = ?, Task_description = ?, Task_notes = ?, Task_plan = ?, Task_app_Acronym = ?, Task_state = ?, Task_creator = ?, Task_owner = ?, Task_createDate = ? WHERE (Task_id = ?)";
+
+      const queryArr = [
+        Task_name,
+        Task_description,
+        Task_notes,
+        Task_plan,
+        Task_app_Acronym,
+        Task_state,
+        Task_creator,
+        Task_owner,
+        Task_createDate,
+        Task_id,
+      ];
+      const results = await dbQuery(sql, queryArr);
+      res.status(200).send(results);
+    } catch (error) {
+      console.log(error);
+      res.status(500).send("Database transaction/connection error");
+    }
+  } else {
+    res.status(403).send("Not authorised");
+  }
+};
+
 exports.tasksController = {
   getAllTask,
   // getAppByAcronym,
   createTask,
-  // editApplication,
+  editTask,
 };

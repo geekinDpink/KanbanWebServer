@@ -51,6 +51,7 @@ router.route("/app").put(applicationsController.editApplication);
 ////////////////////////////////
 router.route("/tasks").get(tasksController.getAllTask);
 router.route("/task").post(tasksController.createTask);
+router.route("/task").put(tasksController.editTask);
 
 app.use(router);
 
