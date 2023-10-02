@@ -134,6 +134,28 @@ const createTask = async (req, res, next) => {
 };
 
 ////////////////////////////////////////////////////////////
+// Get Task By TaskId
+/////////////////////////////////////////////////////////
+const getTaskById = async (req, res, next) => {
+  const myUsername = await checkValidUser(req);
+
+  if (myUsername) {
+    const { Task_id } = req.body;
+    try {
+      const sql = "SELECT * FROM tasks WHERE Task_id = ?";
+      const queryArr = [Task_id];
+      const results = await dbQuery(sql, queryArr);
+      res.status(200).send(results);
+    } catch (error) {
+      console.log(error);
+      res.status(500).send("Database transaction/connection error");
+    }
+  } else {
+    res.status(403).send("Not authorised");
+  }
+};
+
+////////////////////////////////////////////////////////////
 // Edit Task
 /////////////////////////////////////////////////////////
 const editTask = async (req, res, next) => {
@@ -180,7 +202,7 @@ const editTask = async (req, res, next) => {
 
 exports.tasksController = {
   getAllTask,
-  // getAppByAcronym,
   createTask,
+  getTaskById,
   editTask,
 };
