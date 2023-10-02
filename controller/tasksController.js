@@ -133,13 +133,16 @@ const createTask = async (req, res, next) => {
       Task_createDate,
     } = req.body;
     try {
+      // Add Username and Task state to task note
+      const currentNote = `${new Date()}\nUsername: ${myUsername}\nTask State: ${Task_state}\nTask Note:\n${Task_notes}`;
+
       const sql =
         "INSERT INTO tasks (Task_name, Task_description, Task_notes, Task_id, Task_plan, Task_app_Acronym, Task_state, Task_creator, Task_owner, Task_createDate) VALUES (?,?,?,?,?,?,?,?,?,?)";
 
       const queryArr = [
         Task_name,
         Task_description,
-        Task_notes,
+        currentNote,
         Task_id,
         Task_plan,
         Task_app_Acronym,
