@@ -1,6 +1,13 @@
+R2
 TODO
 Create and update app validation (Especially RN)
 
+Done
+Increase App RN when create task
+
+---
+
+R1
 Error Handling: Missing Params - 400, Authorized users, DB Query error [test case: wrong dbconfig] - 500, JWT signTODO
 TODO Add expiry and refresh token
 TODO DB Query Error Handling - no record for login
