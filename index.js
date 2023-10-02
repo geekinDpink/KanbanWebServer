@@ -56,6 +56,7 @@ router.route("/task").put(tasksController.editTask);
 router.route("/task").put(tasksController.editTask);
 router.route("/task/id").post(tasksController.getTaskById);
 router.route("/task/promote").put(tasksController.promoteTask);
+router.route("/task/demote").put(tasksController.demoteTask);
 
 app.use(router);
 
