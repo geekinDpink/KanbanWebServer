@@ -88,6 +88,32 @@ const getAllTask = async (req, res, next) => {
 };
 
 ////////////////////////////////////////////////////////////
+// Get All Tasks By App Acronym
+/////////////////////////////////////////////////////////
+const getAllTasksByAcronym = async (req, res, next) => {
+  const myUsername = await checkValidUser(req);
+  if (myUsername) {
+    try {
+      const { Task_app_Acronym } = req.body;
+      const sql = "SELECT * FROM tasks WHERE Task_app_Acronym = ?";
+      const queryArr = [Task_app_Acronym];
+      const results = await dbQuery(sql, queryArr);
+
+      if (results.length > 0) {
+        res.status(200).send(results);
+      } else {
+        res.status(404).send("No record found");
+      }
+    } catch (error) {
+      console.log(error);
+      res.status(500).send("Database transaction/connection error");
+    }
+  } else {
+    res.status(403).send("Not authorised");
+  }
+};
+
+////////////////////////////////////////////////////////////
 // Create Task
 /////////////////////////////////////////////////////////
 const createTask = async (req, res, next) => {
@@ -202,6 +228,7 @@ const editTask = async (req, res, next) => {
 
 exports.tasksController = {
   getAllTask,
+  getAllTasksByAcronym,
   createTask,
   getTaskById,
   editTask,
