@@ -1,5 +1,5 @@
 TODO
-Create and update app validation
+Create and update app validation (Especially RN)
 
 Error Handling: Missing Params - 400, Authorized users, DB Query error [test case: wrong dbconfig] - 500, JWT signTODO
 TODO Add expiry and refresh token
@@ -100,7 +100,7 @@ CREATE TABLE IF NOT EXISTS `tasks` (
   `Task_name` varchar(50) NOT NULL,
   `Task_description` varchar(500) DEFAULT NULL,
   `Task_notes` varchar(500) DEFAULT NULL,
-  `Task_id` int NOT NULL,
+  `Task_id` varchar(50) NOT NULL,
   `Task_plan` varchar(50) DEFAULT NULL,
   `Task_app_Acronym` varchar(50) NOT NULL,
   `Task_state` varchar(50) NOT NULL,

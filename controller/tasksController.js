@@ -149,9 +149,20 @@ const createTask = async (req, res, next) => {
         Task_createDate,
       ];
       const results = await dbQuery(sql, queryArr);
-      res.status(200).send(results);
+      // res.status(200).send(results);
     } catch (error) {
       console.log(error);
+      res.status(500).send("Database transaction/connection error");
+    }
+
+    try {
+      const { Task_app_Acronym } = req.body;
+      const sql =
+        "UPDATE applications SET APP_Rnumber = APP_Rnumber+1 WHERE APP_ACRONYM = ?";
+      const queryArr = [Task_app_Acronym];
+      const results2 = await dbQuery(sql, queryArr);
+      res.status(200).send(results2);
+    } catch (error) {
       res.status(500).send("Database transaction/connection error");
     }
   } else {

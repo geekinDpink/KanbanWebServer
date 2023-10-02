@@ -6,15 +6,18 @@ const jwt = require("jsonwebtoken");
 /////////////////////////////////////////////////////////
 const checkValidUser = async (req) => {
   const authHeader = req.headers.authorization;
+  console.log("outside authHeader");
 
   if (authHeader) {
     const token = authHeader.split(" ")[1];
     let verifyJWTRes = {};
     let queryArr = [];
+    console.log("inside authHeader");
     try {
       verifyJWTRes = await jwt.verify(token, process.env.JWT_SECRET);
       queryArr = [verifyJWTRes.username];
     } catch (error) {
+      console.log("token not verify");
       return null;
     }
     try {
@@ -98,6 +101,7 @@ const getAllApplication = async (req, res, next) => {
 // Get Application By Acronym
 /////////////////////////////////////////////////////////
 const getAppByAcronym = async (req, res, next) => {
+  console.log("getAppByAcronym req", req);
   const myUsername = await checkValidUser(req);
   if (myUsername) {
     const { App_Acronym } = req.body;
@@ -120,6 +124,7 @@ const getAppByAcronym = async (req, res, next) => {
       res.status(404).send("Invalid Request due to missing parameters");
     }
   } else {
+    console.log("Not auth", myUsername);
     res.status(403).send("Not authorised");
   }
 };
