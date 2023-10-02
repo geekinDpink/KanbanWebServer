@@ -52,8 +52,10 @@ router.route("/app").put(applicationsController.editApplication);
 router.route("/tasks").get(tasksController.getAllTask);
 router.route("/tasks/acronym").post(tasksController.getAllTasksByAcronym);
 router.route("/task").post(tasksController.createTask);
-router.route("/task/id").post(tasksController.getTaskById);
 router.route("/task").put(tasksController.editTask);
+router.route("/task").put(tasksController.editTask);
+router.route("/task/id").post(tasksController.getTaskById);
+router.route("/task/promote").put(tasksController.promoteTask);
 
 app.use(router);
 

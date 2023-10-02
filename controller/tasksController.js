@@ -237,10 +237,54 @@ const editTask = async (req, res, next) => {
   }
 };
 
+////////////////////////////////////////////////////////////
+// Promote Task - Advance Task State and Add Note
+/////////////////////////////////////////////////////////
+const promoteTask = async (req, res, next) => {
+  const myUsername = await checkValidUser(req);
+
+  // TOOO: Add checkgroup is PL
+  if (myUsername) {
+    const { Task_id } = req.body;
+    let currentTaskState;
+
+    try {
+      const sql = "SELECT Task_state FROM tasks WHERE Task_id = ?";
+      const queryArr = [Task_id];
+      const results = await dbQuery(sql, queryArr);
+      if (results.length > 0) {
+        currentTaskState = results[0].Task_state;
+      } else {
+        res.status(404).send("Task record not found");
+      }
+    } catch (error) {
+      console.log(error);
+      res.status(500).send("Database transaction/connection error");
+    }
+
+    // From Task State Array, find index and progress to the next state
+    const taskStateArr = ["open", "todolist", "doing", "done", "closed"];
+    const taskStateArrIndex = taskStateArr.indexOf(currentTaskState);
+    const newTaskState = taskStateArr[taskStateArrIndex + 1];
+    try {
+      const sql =
+        "UPDATE tasks SET Task_state = ?, Task_owner = ? WHERE (Task_id = ?)";
+
+      const queryArr = [newTaskState, myUsername, Task_id];
+      const results = await dbQuery(sql, queryArr);
+      res.status(200).send(results);
+    } catch (error) {
+      console.log(error);
+      res.status(500).send("Database transaction/connection error");
+    }
+  }
+};
+
 exports.tasksController = {
   getAllTask,
   getAllTasksByAcronym,
   createTask,
   getTaskById,
   editTask,
+  promoteTask,
 };
