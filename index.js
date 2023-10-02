@@ -30,7 +30,7 @@ router.route("/users").put(usersController.updateUserDetails);
 router.route("/users").post(usersController.getAllUser); // admin only
 router.route("/user").get(usersController.getMyUser);
 router.route("/user").post(usersController.getUserById); // admin only
-router.route("/user/admin").get(usersController.checkAdmin); // admin only
+router.route("/user/admin").get(usersController.checkValidUserAndIsAdmin); // check valid user and isAdmin
 
 /////////////////////////////////
 // Usergroups

@@ -453,7 +453,7 @@ const getMyUser = async (req, res, next) => {
 ////////////////////////////////////////////////////////////////
 // Authentication and Authorisation Check for each page load
 ////////////////////////////////////////////////////////////////
-const checkAdmin = async (req, res, next) => {
+const checkValidUserAndIsAdmin = async (req, res, next) => {
   const myUsername = await checkValidUser(req);
   const isAdmin = await checkGroup(myUsername, "admin");
 
@@ -476,5 +476,5 @@ exports.usersController = {
   getAllUser: getAllUser,
   getUserById: getUserById,
   getMyUser: getMyUser,
-  checkAdmin: checkAdmin,
+  checkValidUserAndIsAdmin: checkValidUserAndIsAdmin,
 };
