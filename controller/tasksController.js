@@ -101,38 +101,45 @@ const getAuthorisedUserGrp = async (acronym, taskState) => {
 ////////////////////////////////////////////////////////////
 // Send Email
 /////////////////////////////////////////////////////////
-const emailProjectLead = () => {
-  // var transporter = nodemailer.createTransport({
-  //   service: "gmail",
-  //   auth: {
-  //     user: process.env.SERVER_EMAIL_ADD,
-  //     pass: process.env.SERVER_EMAIL_PASS,
-  //   },
-  // });
+const emailProjectLead = async () => {
+  const sql = "SELECT username,email,usergroup FROM useraccounts";
+  const queryArr = [];
 
-  var transport = nodemailer.createTransport({
-    host: process.env.SERVER_HOST,
-    port: process.env.SERVER_PORT,
-    auth: {
-      user: process.env.SERVER_USER,
-      pass: process.env.SERVER_PASS,
-    },
-  });
+  const sendEmail = (plEmail, plName) => {
+    var transport = nodemailer.createTransport({
+      host: process.env.SERVER_HOST,
+      port: process.env.SERVER_PORT,
+      auth: {
+        user: process.env.SERVER_USER,
+        pass: process.env.SERVER_PASS,
+      },
+    });
 
-  var mailOptions = {
-    from: "Johnny@hotmail.com",
-    to: "rawisglenn@hotmail.com",
-    subject: "[For Approval] Task is done",
-    text: "Your task is done",
+    var mailOptions = {
+      from: "system@tms.com",
+      to: plEmail,
+      subject: "[For Approval] Task is done",
+      text: `Dear ${plName}, a task is done and submitted for your approval.`,
+    };
+
+    transport.sendMail(mailOptions, function (error, info) {
+      if (error) {
+        console.log(error);
+      } else {
+        console.log("Email sent: " + info.response);
+      }
+    });
   };
 
-  transport.sendMail(mailOptions, function (error, info) {
-    if (error) {
-      console.log(error);
-    } else {
-      console.log("Email sent: " + info.response);
-    }
-  });
+  try {
+    const results = await dbQuery(sql, queryArr);
+    // From the array of object (each user), find Project Lead and send email
+    results.forEach((res) => {
+      if (res.usergroup.toLowerCase().split(",").includes("project lead")) {
+        sendEmail(res.email, res.username);
+      }
+    });
+  } catch (error) {}
 };
 
 ////////////////////////////////////////////////////////////
@@ -306,6 +313,7 @@ const promoteTask = async (req, res, next) => {
               const resultsUpdate = await dbQuery(sql, queryArr);
               if (resultsUpdate) {
                 if (newTaskState === "done") {
+                  console.log("Try to email PL");
                   emailProjectLead();
                 }
                 res.status(200).send(newTaskState);
