@@ -115,7 +115,7 @@ const getAllTasksByAcronym = async (req, res, next) => {
 };
 
 ////////////////////////////////////////////////////////////
-// Create Task
+// Create Task and Increment Running Number of App
 /////////////////////////////////////////////////////////
 const createTask = async (req, res, next) => {
   const myUsername = await checkValidUser(req);
@@ -124,7 +124,7 @@ const createTask = async (req, res, next) => {
     const {
       Task_name,
       Task_description,
-      Task_notes,
+      Add_task_notes,
       Task_id,
       Task_plan,
       Task_app_Acronym,
@@ -134,9 +134,11 @@ const createTask = async (req, res, next) => {
       Task_createDate,
     } = req.body;
     try {
-      // Add Username and Task state to task note
-      const currentNote = `${new Date()}\nUsername: ${myUsername}\nTask State: ${Task_state}\nTask Note:\n${Task_notes}`;
-
+      // Add timestamp and other details to task note
+      const timeStamp = moment(new Date()).format("YYYY-MM-DD h:mmA");
+      const currentNote = `${timeStamp}\nUser: ${myUsername}\nTask State: ${Task_state}\nAction: Created Task\nTask Note:\n${
+        Add_task_notes ?? ""
+      }`;
       const sql =
         "INSERT INTO tasks (Task_name, Task_description, Task_notes, Task_id, Task_plan, Task_app_Acronym, Task_state, Task_creator, Task_owner, Task_createDate) VALUES (?,?,?,?,?,?,?,?,?,?)";
 
