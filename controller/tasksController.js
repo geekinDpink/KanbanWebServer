@@ -228,6 +228,7 @@ const promoteTask = async (req, res, next) => {
         const taskStateArrIndex = taskStateArr.indexOf(currentTaskState);
         const newTaskState = taskStateArr[taskStateArrIndex + 1];
 
+        // Check App Permit of the task state and check if username is part of task owner
         const authorisedUserGrp = await getAuthorisedUserGrp(
           results[0].Task_app_Acronym,
           currentTaskState
@@ -283,7 +284,8 @@ const demoteTask = async (req, res, next) => {
     let currentTaskState;
 
     try {
-      const sql = "SELECT Task_state, Task_notes FROM tasks WHERE Task_id = ?";
+      const sql =
+        "SELECT Task_state, Task_notes,Task_app_Acronym FROM tasks WHERE Task_id = ?";
       const queryArr = [Task_id];
       const results = await dbQuery(sql, queryArr);
       if (results.length > 0) {
@@ -293,26 +295,38 @@ const demoteTask = async (req, res, next) => {
         const taskStateArrIndex = taskStateArr.indexOf(currentTaskState);
         const newTaskState = taskStateArr[taskStateArrIndex - 1];
 
-        if (taskStateArrIndex > 0) {
-          // Add Username and Task state to task note
-          const oldNotes = results[0].Task_notes;
-          const timeStamp = moment(new Date()).format("YYYY-MM-DD h:mmA");
-          const currentNote = `${timeStamp}\nUser: ${myUsername}\nTask State: ${currentTaskState}\nAction: Demote to ${newTaskState}\nTask Note:\n${
-            Add_Task_Notes ?? ""
-          }`;
-          const mergedNote = `${currentNote}\n\n\n${oldNotes}`;
-          try {
-            const sql =
-              "UPDATE tasks SET Task_state = ?, Task_owner = ?, Task_notes = ? WHERE (Task_id = ?)";
-            const queryArr = [newTaskState, myUsername, mergedNote, Task_id];
-            const resultsUpdate = await dbQuery(sql, queryArr);
-            res.status(200).send(newTaskState);
-          } catch (error) {
-            console.log(error);
-            res.status(500).send("Database transaction/connection error");
+        // Check App Permit of the task state and check if username is part of task owner
+        const authorisedUserGrp = await getAuthorisedUserGrp(
+          results[0].Task_app_Acronym,
+          currentTaskState
+        );
+        const isTaskOwner = await checkGroup(myUsername, authorisedUserGrp);
+
+        if (isTaskOwner) {
+          if (taskStateArrIndex > 0) {
+            // Add Username and Task state to task note
+            const oldNotes = results[0].Task_notes;
+            const timeStamp = moment(new Date()).format("YYYY-MM-DD h:mmA");
+            const currentNote = `${timeStamp}\nUser: ${myUsername}\nTask State: ${currentTaskState}\nAction: Demote to ${newTaskState}\nTask Note:\n${
+              Add_Task_Notes ?? ""
+            }`;
+            const mergedNote = `${currentNote}\n\n\n${oldNotes}`;
+            try {
+              const sql =
+                "UPDATE tasks SET Task_state = ?, Task_owner = ?, Task_notes = ? WHERE (Task_id = ?)";
+              const queryArr = [newTaskState, myUsername, mergedNote, Task_id];
+              const resultsUpdate = await dbQuery(sql, queryArr);
+              res.status(200).send(newTaskState);
+            } catch (error) {
+              console.log(error);
+              res.status(500).send("Database transaction/connection error");
+            }
+          } else {
+            res.status(403).send("Unable to demote state further");
           }
         } else {
-          res.status(403).send("Unable to demote state further");
+          console.log("Not Task Owner");
+          res.status(403).send("Not Authorised");
         }
       } else {
         res.status(404).send("Task record not found");
