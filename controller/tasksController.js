@@ -66,12 +66,13 @@ const checkGroup = async (username, groupName) => {
 const getAuthorisedUserGrp = async (acronym, taskState) => {
   try {
     const sql =
-      "SELECT App_Permit_Open, App_Permit_ToDoList, App_Permit_Doing, App_Permit_Done FROM applications WHERE App_Acronym = ?";
+      "SELECT App_Permit_Create, App_Permit_Open, App_Permit_ToDoList, App_Permit_Doing, App_Permit_Done FROM applications WHERE App_Acronym = ?";
     const queryArr = [acronym];
     const results = await dbQuery(sql, queryArr);
 
     if (results.length > 0) {
       const {
+        App_Permit_Create,
         App_Permit_Open,
         App_Permit_ToDoList,
         App_Permit_Doing,
@@ -79,6 +80,7 @@ const getAuthorisedUserGrp = async (acronym, taskState) => {
       } = results[0];
 
       const stateAndUserGrpOwner = {
+        create: App_Permit_Create,
         open: App_Permit_Open,
         todolist: App_Permit_ToDoList,
         doing: App_Permit_Doing,
@@ -126,6 +128,7 @@ const getAllTasksByAcronym = async (req, res, next) => {
 /////////////////////////////////////////////////////////
 const createTask = async (req, res, next) => {
   const myUsername = await checkValidUser(req);
+
   // TOOO: Add checkgroup is PL
   if (myUsername) {
     const {
@@ -140,43 +143,56 @@ const createTask = async (req, res, next) => {
       Task_owner,
       Task_createDate,
     } = req.body;
-    try {
-      // Add timestamp and other details to task note
-      const timeStamp = moment(new Date()).format("YYYY-MM-DD h:mmA");
-      const currentNote = `${timeStamp}\nUser: ${myUsername}\nTask State: ${Task_state}\nAction: Created Task\nTask Note:\n${
-        Add_task_notes ?? ""
-      }`;
-      const sql =
-        "INSERT INTO tasks (Task_name, Task_description, Task_notes, Task_id, Task_plan, Task_app_Acronym, Task_state, Task_creator, Task_owner, Task_createDate) VALUES (?,?,?,?,?,?,?,?,?,?)";
 
-      const queryArr = [
-        Task_name,
-        Task_description,
-        currentNote,
-        Task_id,
-        Task_plan,
-        Task_app_Acronym,
-        Task_state,
-        Task_creator,
-        Task_owner,
-        Task_createDate,
-      ];
-      const results = await dbQuery(sql, queryArr);
-      // res.status(200).send(results);
-    } catch (error) {
-      console.log(error);
-      res.status(500).send("Database transaction/connection error");
-    }
+    // Check App Permit of the task state and check if username is part of task owner
+    const authorisedUserGrp = await getAuthorisedUserGrp(
+      Task_app_Acronym,
+      "create"
+    );
+    const isTaskOwner = await checkGroup(myUsername, authorisedUserGrp);
 
-    try {
-      const { Task_app_Acronym } = req.body;
-      const sql =
-        "UPDATE applications SET APP_Rnumber = APP_Rnumber+1 WHERE APP_ACRONYM = ?";
-      const queryArr = [Task_app_Acronym];
-      const results2 = await dbQuery(sql, queryArr);
-      res.status(200).send(results2);
-    } catch (error) {
-      res.status(500).send("Database transaction/connection error");
+    if (isTaskOwner) {
+      try {
+        // Add timestamp and other details to task note
+        const timeStamp = moment(new Date()).format("YYYY-MM-DD h:mmA");
+        const currentNote = `${timeStamp}\nUser: ${myUsername}\nTask State: ${Task_state}\nAction: Created Task\nTask Note:\n${
+          Add_task_notes ?? ""
+        }`;
+        const sql =
+          "INSERT INTO tasks (Task_name, Task_description, Task_notes, Task_id, Task_plan, Task_app_Acronym, Task_state, Task_creator, Task_owner, Task_createDate) VALUES (?,?,?,?,?,?,?,?,?,?)";
+
+        const queryArr = [
+          Task_name,
+          Task_description,
+          currentNote,
+          Task_id,
+          Task_plan,
+          Task_app_Acronym,
+          Task_state,
+          Task_creator,
+          Task_owner,
+          Task_createDate,
+        ];
+        const results = await dbQuery(sql, queryArr);
+        // res.status(200).send(results);
+      } catch (error) {
+        console.log(error);
+        res.status(500).send("Database transaction/connection error");
+      }
+
+      try {
+        const { Task_app_Acronym } = req.body;
+        const sql =
+          "UPDATE applications SET APP_Rnumber = APP_Rnumber+1 WHERE APP_ACRONYM = ?";
+        const queryArr = [Task_app_Acronym];
+        const results2 = await dbQuery(sql, queryArr);
+        res.status(200).send(results2);
+      } catch (error) {
+        res.status(500).send("Database transaction/connection error");
+      }
+    } else {
+      console.log("Not Task Owner");
+      res.status(403).send("Not Permitted");
     }
   } else {
     res.status(403).send("Not authorised");
@@ -260,7 +276,7 @@ const promoteTask = async (req, res, next) => {
           }
         } else {
           console.log("Not Task Owner");
-          res.status(403).send("Not Authorised");
+          res.status(403).send("Not Permitted");
         }
       } else {
         res.status(404).send("Task record not found");
@@ -326,7 +342,7 @@ const demoteTask = async (req, res, next) => {
           }
         } else {
           console.log("Not Task Owner");
-          res.status(403).send("Not Authorised");
+          res.status(403).send("Not Permitted");
         }
       } else {
         res.status(404).send("Task record not found");
