@@ -51,6 +51,7 @@ router.route("/app").put(applicationsController.editApplication);
 // Plan
 ////////////////////////////////
 router.route("/plan").post(plansController.createPlan);
+router.route("/plans").post(plansController.getAllPlans);
 
 /////////////////////////////////
 // Task

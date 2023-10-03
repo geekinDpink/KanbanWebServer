@@ -1,4 +1,7 @@
-const { dbQuery } = require("../config/dbConfig");const jwt = require("jsonwebtoken"); ////////////////////////////////////////////////////////////
+const { dbQuery } = require("../config/dbConfig");
+const jwt = require("jsonwebtoken");
+
+////////////////////////////////////////////////////////////
 // Functions for Authentication (token valid and isActive) and Authorisation (isAdmin)
 /////////////////////////////////////////////////////////
 const checkValidUser = async (req) => {
@@ -90,6 +93,33 @@ const createPlan = async (req, res, next) => {
   }
 };
 
+////////////////////////////////////////////////////////////
+// Get All Application
+/////////////////////////////////////////////////////////
+const getAllPlans = async (req, res, next) => {
+  const myUsername = await checkValidUser(req);
+
+  if (myUsername) {
+    try {
+      const { Plan_app_Acronym } = req.body;
+      const sql = "SELECT * FROM plans WHERE Plan_app_Acronym = ?";
+      const queryArr = [Plan_app_Acronym];
+      const results = await dbQuery(sql, queryArr);
+      if (results.length > 0) {
+        res.status(200).send(results);
+      } else {
+        res.status(404).send("Mo plan found");
+      }
+    } catch (error) {
+      console.log(error);
+      res.status(500).send("Database transaction/connection error");
+    }
+  } else {
+    res.status(403).send("Not authorised");
+  }
+};
+
 exports.plansController = {
   createPlan,
+  getAllPlans,
 };
