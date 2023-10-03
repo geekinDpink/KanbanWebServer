@@ -110,7 +110,7 @@ CREATE TABLE IF NOT EXISTS `plans` (
 CREATE TABLE IF NOT EXISTS `tasks` (
   `Task_name` varchar(50) NOT NULL,
   `Task_description` varchar(500) DEFAULT NULL,
-  `Task_notes` varchar(500) DEFAULT NULL,
+  `Task_notes` varchar(2500) DEFAULT NULL,
   `Task_id` varchar(50) NOT NULL,
   `Task_plan` varchar(50) DEFAULT NULL,
   `Task_app_Acronym` varchar(50) NOT NULL,
