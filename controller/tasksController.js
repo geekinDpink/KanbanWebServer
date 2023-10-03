@@ -268,7 +268,7 @@ const promoteTask = async (req, res, next) => {
           const oldNotes = results[0].Task_notes;
           const timeStamp = moment(new Date()).format("YYYY-MM-DD h:mmA");
           const currentNote = `${timeStamp}\nUser: ${myUsername}\nTask State: ${currentTaskState}\nAction: Promote to ${newTaskState}\nTask Note:\n${
-            Add_Task_Notes ?? "-"
+            Add_Task_Notes ?? ""
           }`;
           const mergedNote = `${currentNote}\n\n\n${oldNotes}`;
           try {
@@ -322,7 +322,7 @@ const demoteTask = async (req, res, next) => {
           const oldNotes = results[0].Task_notes;
           const timeStamp = moment(new Date()).format("YYYY-MM-DD h:mmA");
           const currentNote = `${timeStamp}\nUser: ${myUsername}\nTask State: ${currentTaskState}\nAction: Demote to ${newTaskState}\nTask Note:\n${
-            Add_Task_Notes ?? "-"
+            Add_Task_Notes ?? ""
           }`;
           const mergedNote = `${currentNote}\n\n\n${oldNotes}`;
           try {
