@@ -1,6 +1,7 @@
 const { dbQuery } = require("../config/dbConfig");
 const jwt = require("jsonwebtoken");
 var moment = require("moment"); // require
+var nodemailer = require("nodemailer");
 
 ////////////////////////////////////////////////////////////
 // Functions for Authentication (token valid and isActive) and Authorisation (isAdmin)
@@ -95,6 +96,43 @@ const getAuthorisedUserGrp = async (acronym, taskState) => {
     console.log("error");
     return null;
   }
+};
+
+////////////////////////////////////////////////////////////
+// Send Email
+/////////////////////////////////////////////////////////
+const emailProjectLead = () => {
+  // var transporter = nodemailer.createTransport({
+  //   service: "gmail",
+  //   auth: {
+  //     user: process.env.SERVER_EMAIL_ADD,
+  //     pass: process.env.SERVER_EMAIL_PASS,
+  //   },
+  // });
+
+  var transport = nodemailer.createTransport({
+    host: process.env.SERVER_HOST,
+    port: process.env.SERVER_PORT,
+    auth: {
+      user: process.env.SERVER_USER,
+      pass: process.env.SERVER_PASS,
+    },
+  });
+
+  var mailOptions = {
+    from: "Johnny@hotmail.com",
+    to: "rawisglenn@hotmail.com",
+    subject: "[For Approval] Task is done",
+    text: "Your task is done",
+  };
+
+  transport.sendMail(mailOptions, function (error, info) {
+    if (error) {
+      console.log(error);
+    } else {
+      console.log("Email sent: " + info.response);
+    }
+  });
 };
 
 ////////////////////////////////////////////////////////////
@@ -266,7 +304,12 @@ const promoteTask = async (req, res, next) => {
 
               const queryArr = [newTaskState, myUsername, mergedNote, Task_id];
               const resultsUpdate = await dbQuery(sql, queryArr);
-              res.status(200).send(newTaskState);
+              if (resultsUpdate) {
+                if (newTaskState === "done") {
+                  emailProjectLead();
+                }
+                res.status(200).send(newTaskState);
+              }
             } catch (error) {
               console.log(error);
               res.status(500).send("Database transaction/connection error");
