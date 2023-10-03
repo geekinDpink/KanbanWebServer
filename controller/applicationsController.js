@@ -6,13 +6,11 @@ const jwt = require("jsonwebtoken");
 /////////////////////////////////////////////////////////
 const checkValidUser = async (req) => {
   const authHeader = req.headers.authorization;
-  console.log("outside authHeader");
 
   if (authHeader) {
     const token = authHeader.split(" ")[1];
     let verifyJWTRes = {};
     let queryArr = [];
-    console.log("inside authHeader");
     try {
       verifyJWTRes = await jwt.verify(token, process.env.JWT_SECRET);
       queryArr = [verifyJWTRes.username];
