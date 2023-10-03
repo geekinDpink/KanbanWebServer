@@ -194,9 +194,9 @@ const createTask = async (req, res, next) => {
       Task_app_Acronym,
       "create"
     );
-    const isTaskOwner = await checkGroup(myUsername, authorisedUserGrp);
+    const isPermitted = await checkGroup(myUsername, authorisedUserGrp);
 
-    if (isTaskOwner) {
+    if (isPermitted) {
       try {
         // Add timestamp and other details to task note
         const timeStamp = moment(new Date()).format("YYYY-MM-DD h:mmA");
@@ -294,9 +294,9 @@ const promoteTask = async (req, res, next) => {
           results[0].Task_app_Acronym,
           currentTaskState
         );
-        const isTaskOwner = await checkGroup(myUsername, authorisedUserGrp);
+        const isPermitted = await checkGroup(myUsername, authorisedUserGrp);
 
-        if (isTaskOwner) {
+        if (isPermitted) {
           if (taskStateArrIndex < taskStateArr.length - 1) {
             // Add Username and Task state to task note
             const oldNotes = results[0].Task_notes;
@@ -367,9 +367,9 @@ const demoteTask = async (req, res, next) => {
           results[0].Task_app_Acronym,
           currentTaskState
         );
-        const isTaskOwner = await checkGroup(myUsername, authorisedUserGrp);
+        const isPermitted = await checkGroup(myUsername, authorisedUserGrp);
 
-        if (isTaskOwner) {
+        if (isPermitted) {
           if (taskStateArrIndex > 0) {
             // Add Username and Task state to task note
             const oldNotes = results[0].Task_notes;
