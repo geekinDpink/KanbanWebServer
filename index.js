@@ -53,7 +53,7 @@ router.route("/tasks").get(tasksController.getAllTask);
 router.route("/tasks/acronym").post(tasksController.getAllTasksByAcronym);
 router.route("/task").post(tasksController.createTask);
 router.route("/task").put(tasksController.editTask);
-router.route("/task").put(tasksController.editTask);
+router.route("/task/note").post(tasksController.addTaskNotes);
 router.route("/task/id").post(tasksController.getTaskById);
 router.route("/task/promote").put(tasksController.promoteTask);
 router.route("/task/demote").put(tasksController.demoteTask);

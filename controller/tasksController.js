@@ -64,31 +64,6 @@ const checkGroup = async (username, groupName) => {
 };
 
 ////////////////////////////////////////////////////////////
-// Get All Task
-/////////////////////////////////////////////////////////
-const getAllTask = async (req, res, next) => {
-  const myUsername = await checkValidUser(req);
-  if (myUsername) {
-    try {
-      const sql = "SELECT * FROM tasks";
-      const queryArr = [];
-      const results = await dbQuery(sql, queryArr);
-
-      if (results.length > 0) {
-        res.status(200).send(results);
-      } else {
-        res.status(404).send("No record found");
-      }
-    } catch (error) {
-      console.log(error);
-      res.status(500).send("Database transaction/connection error");
-    }
-  } else {
-    res.status(403).send("Not authorised");
-  }
-};
-
-////////////////////////////////////////////////////////////
 // Get All Tasks By App Acronym
 /////////////////////////////////////////////////////////
 const getAllTasksByAcronym = async (req, res, next) => {
@@ -187,51 +162,6 @@ const getTaskById = async (req, res, next) => {
     try {
       const sql = "SELECT * FROM tasks WHERE Task_id = ?";
       const queryArr = [Task_id];
-      const results = await dbQuery(sql, queryArr);
-      res.status(200).send(results);
-    } catch (error) {
-      console.log(error);
-      res.status(500).send("Database transaction/connection error");
-    }
-  } else {
-    res.status(403).send("Not authorised");
-  }
-};
-
-////////////////////////////////////////////////////////////
-// Edit Task
-/////////////////////////////////////////////////////////
-const editTask = async (req, res, next) => {
-  const myUsername = await checkValidUser(req);
-  if (myUsername) {
-    const {
-      Task_name,
-      Task_description,
-      Task_notes,
-      Task_id,
-      Task_plan,
-      Task_app_Acronym,
-      Task_state,
-      Task_creator,
-      Task_owner,
-      Task_createDate,
-    } = req.body;
-    try {
-      const sql =
-        "UPDATE tasks SET Task_name = ?, Task_description = ?, Task_notes = ?, Task_plan = ?, Task_app_Acronym = ?, Task_state = ?, Task_creator = ?, Task_owner = ?, Task_createDate = ? WHERE (Task_id = ?)";
-
-      const queryArr = [
-        Task_name,
-        Task_description,
-        Task_notes,
-        Task_plan,
-        Task_app_Acronym,
-        Task_state,
-        Task_creator,
-        Task_owner,
-        Task_createDate,
-        Task_id,
-      ];
       const results = await dbQuery(sql, queryArr);
       res.status(200).send(results);
     } catch (error) {
@@ -350,12 +280,124 @@ const demoteTask = async (req, res, next) => {
   }
 };
 
+////////////////////////////////////////////////////////////
+// Add Task Notes
+/////////////////////////////////////////////////////////
+const addTaskNotes = async (req, res, next) => {
+  const myUsername = await checkValidUser(req);
+  if (myUsername) {
+    const { Add_Task_Notes, Task_id } = req.body;
+
+    try {
+      // Query db to get task state and existing notes to add on
+      const sql = "SELECT Task_state, Task_notes FROM tasks WHERE Task_id = ?";
+      const queryArr = [Task_id];
+      const results = await dbQuery(sql, queryArr);
+      if (results.length > 0) {
+        // Generate task details and add on to existing note
+        const currentTaskState = results[0].Task_state;
+        const oldNotes = results[0].Task_notes;
+        const timeStamp = moment(new Date()).format("YYYY-MM-DD h:mmA");
+        const currentNote = `${timeStamp}\nUser: ${myUsername}\nTask State: ${currentTaskState}\nAction: Add Note\nTask Note:\n${
+          Add_Task_Notes ?? ""
+        }`;
+        const mergedNote = `${currentNote}\n\n\n${oldNotes}`;
+        try {
+          // Update to db
+          const sql = "UPDATE tasks SET Task_notes = ? WHERE Task_id = ?";
+          const queryArr = [mergedNote, Task_id];
+          const resultsUpdate = await dbQuery(sql, queryArr);
+          res.status(200).send(resultsUpdate);
+        } catch (error) {
+          console.log(error);
+          res.status(500).send("Database transaction/connection error");
+        }
+      }
+    } catch (err) {
+      res.status(404).send("Task not found");
+    }
+  } else {
+    res.status(403).send("Not authorised");
+  }
+};
+
+////////////////////////////////////////////////////////////
+// Get All Task
+/////////////////////////////////////////////////////////
+const getAllTask = async (req, res, next) => {
+  const myUsername = await checkValidUser(req);
+  if (myUsername) {
+    try {
+      const sql = "SELECT * FROM tasks";
+      const queryArr = [];
+      const results = await dbQuery(sql, queryArr);
+
+      if (results.length > 0) {
+        res.status(200).send(results);
+      } else {
+        res.status(404).send("No record found");
+      }
+    } catch (error) {
+      console.log(error);
+      res.status(500).send("Database transaction/connection error");
+    }
+  } else {
+    res.status(403).send("Not authorised");
+  }
+};
+
+////////////////////////////////////////////////////////////
+// Edit Task
+/////////////////////////////////////////////////////////
+const editTask = async (req, res, next) => {
+  const myUsername = await checkValidUser(req);
+  if (myUsername) {
+    const {
+      Task_name,
+      Task_description,
+      Task_notes,
+      Task_id,
+      Task_plan,
+      Task_app_Acronym,
+      Task_state,
+      Task_creator,
+      Task_owner,
+      Task_createDate,
+    } = req.body;
+    try {
+      const sql =
+        "UPDATE tasks SET Task_name = ?, Task_description = ?, Task_notes = ?, Task_plan = ?, Task_app_Acronym = ?, Task_state = ?, Task_creator = ?, Task_owner = ?, Task_createDate = ? WHERE (Task_id = ?)";
+
+      const queryArr = [
+        Task_name,
+        Task_description,
+        Task_notes,
+        Task_plan,
+        Task_app_Acronym,
+        Task_state,
+        Task_creator,
+        Task_owner,
+        Task_createDate,
+        Task_id,
+      ];
+      const results = await dbQuery(sql, queryArr);
+      res.status(200).send(results);
+    } catch (error) {
+      console.log(error);
+      res.status(500).send("Database transaction/connection error");
+    }
+  } else {
+    res.status(403).send("Not authorised");
+  }
+};
+
 exports.tasksController = {
-  getAllTask,
   getAllTasksByAcronym,
   createTask,
   getTaskById,
-  editTask,
   promoteTask,
   demoteTask,
+  addTaskNotes,
+  getAllTask, // not in use by frontend
+  editTask, // not in use by frontend
 };
