@@ -1,5 +1,6 @@
 const { dbQuery } = require("../config/dbConfig");
 const jwt = require("jsonwebtoken");
+var moment = require("moment"); // require
 
 ////////////////////////////////////////////////////////////
 // Functions for Authentication (token valid and isActive) and Authorisation (isAdmin)
@@ -248,11 +249,11 @@ const promoteTask = async (req, res, next) => {
 
   // TOOO: Add checkgroup is PL
   if (myUsername) {
-    const { Task_id } = req.body;
+    const { Task_id, Add_Task_Notes } = req.body;
     let currentTaskState;
 
     try {
-      const sql = "SELECT Task_state FROM tasks WHERE Task_id = ?";
+      const sql = "SELECT Task_state, Task_notes FROM tasks WHERE Task_id = ?";
       const queryArr = [Task_id];
       const results = await dbQuery(sql, queryArr);
       if (results.length > 0) {
@@ -261,13 +262,19 @@ const promoteTask = async (req, res, next) => {
         const taskStateArr = ["open", "todolist", "doing", "done", "closed"];
         const taskStateArrIndex = taskStateArr.indexOf(currentTaskState);
         const newTaskState = taskStateArr[taskStateArrIndex + 1];
+
         if (taskStateArrIndex < taskStateArr.length - 1) {
+          // Add Username and Task state to task note
+          const oldNotes = results[0].Task_notes;
+          const timeStamp = moment(new Date()).format("YYYY-MM-DD h:mmA");
+          const currentNote = `${timeStamp}\nUser: ${myUsername}\nTask State: ${currentTaskState}\nAction: Promote to ${newTaskState}\nTask Note:\n${Add_Task_Notes}`;
+          const mergedNote = `${currentNote}\n\n\n${oldNotes}`;
           try {
             const sql =
-              "UPDATE tasks SET Task_state = ?, Task_owner = ? WHERE (Task_id = ?)";
+              "UPDATE tasks SET Task_state = ?, Task_owner = ?, Task_notes = ? WHERE (Task_id = ?)";
 
-            const queryArr = [newTaskState, myUsername, Task_id];
-            const results = await dbQuery(sql, queryArr);
+            const queryArr = [newTaskState, myUsername, mergedNote, Task_id];
+            const resultsUpdate = await dbQuery(sql, queryArr);
             res.status(200).send(newTaskState);
           } catch (error) {
             console.log(error);
@@ -277,7 +284,6 @@ const promoteTask = async (req, res, next) => {
           res.status(403).send("Unable to promote state further");
         }
       } else {
-        console.log("result", results);
         res.status(404).send("Task record not found");
       }
     } catch (error) {
