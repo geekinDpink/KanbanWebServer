@@ -1,15 +1,18 @@
 R2
 TODO
 Create and update app validation (Especially RN)
-Dynamic auth
+Validate insert Plan dup
 Create App - project lead
-Send Email when done
+Create Plan
+Plan name unique?
 
 Done
 Increase App RN when create task
 Auth to promote/demote task
 API promote task, demote task, save note
 Notes Generation
+Send Email when done
+Dynamic auth
 
 ---
 
@@ -100,9 +103,9 @@ CREATE TABLE IF NOT EXISTS `applications` (
 
 
 CREATE TABLE IF NOT EXISTS `plans` (
-  `Plan_MVP_name` int NOT NULL,
-  `Plan_startDate` varchar(50) DEFAULT NULL,
-  `Plan_endDate` varchar(50) DEFAULT NULL,
+  `Plan_MVP_name` varchar(50) NOT NULL,
+  `Plan_startDate` date DEFAULT NULL,
+  `Plan_endDate` date DEFAULT NULL,
   `Plan_app_Acronym` varchar(50) DEFAULT NULL,
   PRIMARY KEY (`Plan_MVP_name`),
   UNIQUE KEY `Plan_MVP_name_UNIQUE` (`Plan_MVP_name`)

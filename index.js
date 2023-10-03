@@ -1,5 +1,4 @@
-const express = require("express");
-const session = require("express-session");
+const express = require("express");const session = require("express-session");
 const bodyParser = require("body-parser");
 const config = require("./config/config");
 const cors = require("cors");
@@ -9,6 +8,7 @@ const { usersController } = require("./controller/usersController");
 const {
   applicationsController,
 } = require("./controller/applicationsController");
+const { plansController } = require("./controller/plansController");
 const { tasksController } = require("./controller/tasksController");
 
 require("dotenv").config();
@@ -46,6 +46,11 @@ router.route("/apps").get(applicationsController.getAllApplication);
 router.route("/app/acronym").post(applicationsController.getAppByAcronym);
 router.route("/app").post(applicationsController.createApplication);
 router.route("/app").put(applicationsController.editApplication);
+
+/////////////////////////////////
+// Plan
+////////////////////////////////
+router.route("/plan").post(plansController.createPlan);
 
 /////////////////////////////////
 // Task
