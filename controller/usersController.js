@@ -469,6 +469,54 @@ const checkValidUserAndIsAdmin = async (req, res, next) => {
   }
 };
 
+////////////////////////////////////////////////////////////////
+// Check Usergroup Permits for Kanban Page Load
+////////////////////////////////////////////////////////////////
+const checkPermit = async (req, res, next) => {
+  const myUsername = await checkValidUser(req);
+  const { App_Acronym } = req.body;
+  try {
+    const sql =
+      "SELECT App_Permit_Create, App_Permit_Open, App_Permit_ToDoList, App_Permit_Doing, App_Permit_Done FROM applications WHERE App_Acronym = ?";
+    const queryArr = [App_Acronym];
+    const results = await dbQuery(sql, queryArr);
+
+    if (results.length > 0) {
+      const {
+        App_Permit_Create,
+        App_Permit_Open,
+        App_Permit_ToDoList,
+        App_Permit_Doing,
+        App_Permit_Done,
+      } = results[0];
+
+      const isCreate = await checkGroup(myUsername, App_Permit_Create);
+      const isOpen = await checkGroup(myUsername, App_Permit_Open);
+      const isTodolist = await checkGroup(myUsername, App_Permit_ToDoList);
+      const isDoing = await checkGroup(myUsername, App_Permit_Doing);
+      const isDone = await checkGroup(myUsername, App_Permit_Done);
+
+      const permits = {
+        isCreate: isCreate,
+        isOpen: isOpen,
+        isTodolist: isTodolist,
+        isDoing: isDoing,
+        isDone: isDone,
+      };
+
+      res.status(200).send(permits);
+    }
+  } catch (error) {
+    res.status(500).send("Database transaction/connection error");
+  }
+
+  // user can only search their own details
+  if (myUsername) {
+  } else {
+    res.status(403).send("Not authorised");
+  }
+};
+
 exports.usersController = {
   findUser: findUser,
   registerNewUser: registerNewUser,
@@ -477,4 +525,5 @@ exports.usersController = {
   getUserById: getUserById,
   getMyUser: getMyUser,
   checkValidUserAndIsAdmin: checkValidUserAndIsAdmin,
+  checkPermit: checkPermit,
 };

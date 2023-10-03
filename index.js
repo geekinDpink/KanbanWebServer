@@ -31,6 +31,7 @@ router.route("/users").post(usersController.getAllUser); // admin only
 router.route("/user").get(usersController.getMyUser);
 router.route("/user").post(usersController.getUserById); // admin only
 router.route("/user/auth").get(usersController.checkValidUserAndIsAdmin); // check valid user and isAdmin
+router.route("/user/permits").post(usersController.checkPermit);
 
 /////////////////////////////////
 // Usergroups
