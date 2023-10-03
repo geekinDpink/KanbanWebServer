@@ -503,8 +503,9 @@ const checkPermit = async (req, res, next) => {
         isDoing: isDoing,
         isDone: isDone,
       };
-
       res.status(200).send(permits);
+    } else {
+      res.status(404).send("App not found");
     }
   } catch (error) {
     res.status(500).send("Database transaction/connection error");
