@@ -63,6 +63,38 @@ const checkGroup = async (username, groupName) => {
   }
 };
 
+const getAuthorisedUserGrp = async (acronym, taskState) => {
+  try {
+    const sql =
+      "SELECT App_Permit_Open, App_Permit_ToDoList, App_Permit_Doing, App_Permit_Done FROM applications WHERE App_Acronym = ?";
+    const queryArr = [acronym];
+    const results = await dbQuery(sql, queryArr);
+
+    if (results.length > 0) {
+      const {
+        App_Permit_Open,
+        App_Permit_ToDoList,
+        App_Permit_Doing,
+        App_Permit_Done,
+      } = results[0];
+
+      const stateAndUserGrpOwner = {
+        open: App_Permit_Open,
+        todolist: App_Permit_ToDoList,
+        doing: App_Permit_Doing,
+        done: App_Permit_Done,
+      };
+
+      return stateAndUserGrpOwner[taskState];
+    } else {
+      return null;
+    }
+  } catch (error) {
+    console.log("error");
+    return null;
+  }
+};
+
 ////////////////////////////////////////////////////////////
 // Get All Tasks By App Acronym
 /////////////////////////////////////////////////////////
@@ -185,7 +217,8 @@ const promoteTask = async (req, res, next) => {
     let currentTaskState;
 
     try {
-      const sql = "SELECT Task_state, Task_notes FROM tasks WHERE Task_id = ?";
+      const sql =
+        "SELECT Task_state, Task_notes, Task_app_Acronym FROM tasks WHERE Task_id = ?";
       const queryArr = [Task_id];
       const results = await dbQuery(sql, queryArr);
       if (results.length > 0) {
@@ -195,27 +228,38 @@ const promoteTask = async (req, res, next) => {
         const taskStateArrIndex = taskStateArr.indexOf(currentTaskState);
         const newTaskState = taskStateArr[taskStateArrIndex + 1];
 
-        if (taskStateArrIndex < taskStateArr.length - 1) {
-          // Add Username and Task state to task note
-          const oldNotes = results[0].Task_notes;
-          const timeStamp = moment(new Date()).format("YYYY-MM-DD h:mmA");
-          const currentNote = `${timeStamp}\nUser: ${myUsername}\nTask State: ${currentTaskState}\nAction: Promote to ${newTaskState}\nTask Note:\n${
-            Add_Task_Notes ?? ""
-          }`;
-          const mergedNote = `${currentNote}\n\n\n${oldNotes}`;
-          try {
-            const sql =
-              "UPDATE tasks SET Task_state = ?, Task_owner = ?, Task_notes = ? WHERE (Task_id = ?)";
+        const authorisedUserGrp = await getAuthorisedUserGrp(
+          results[0].Task_app_Acronym,
+          currentTaskState
+        );
+        const isTaskOwner = await checkGroup(myUsername, authorisedUserGrp);
 
-            const queryArr = [newTaskState, myUsername, mergedNote, Task_id];
-            const resultsUpdate = await dbQuery(sql, queryArr);
-            res.status(200).send(newTaskState);
-          } catch (error) {
-            console.log(error);
-            res.status(500).send("Database transaction/connection error");
+        if (isTaskOwner) {
+          if (taskStateArrIndex < taskStateArr.length - 1) {
+            // Add Username and Task state to task note
+            const oldNotes = results[0].Task_notes;
+            const timeStamp = moment(new Date()).format("YYYY-MM-DD h:mmA");
+            const currentNote = `${timeStamp}\nUser: ${myUsername}\nTask State: ${currentTaskState}\nAction: Promote to ${newTaskState}\nTask Note:\n${
+              Add_Task_Notes ?? ""
+            }`;
+            const mergedNote = `${currentNote}\n\n\n${oldNotes}`;
+            try {
+              const sql =
+                "UPDATE tasks SET Task_state = ?, Task_owner = ?, Task_notes = ? WHERE (Task_id = ?)";
+
+              const queryArr = [newTaskState, myUsername, mergedNote, Task_id];
+              const resultsUpdate = await dbQuery(sql, queryArr);
+              res.status(200).send(newTaskState);
+            } catch (error) {
+              console.log(error);
+              res.status(500).send("Database transaction/connection error");
+            }
+          } else {
+            res.status(403).send("Unable to promote state further");
           }
         } else {
-          res.status(403).send("Unable to promote state further");
+          console.log("Not Task Owner");
+          res.status(403).send("Not Authorised");
         }
       } else {
         res.status(404).send("Task record not found");

@@ -1,13 +1,15 @@
 R2
 TODO
 Create and update app validation (Especially RN)
-API promote task, demote task, save note
-Auth to promote/demote task
 Dynamic auth
-Notes Generation
+Create App - project lead
+Send Email when done
 
 Done
 Increase App RN when create task
+Auth to promote/demote task
+API promote task, demote task, save note
+Notes Generation
 
 ---
 
