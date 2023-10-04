@@ -106,9 +106,8 @@ CREATE TABLE IF NOT EXISTS `plans` (
   `Plan_MVP_name` varchar(50) NOT NULL,
   `Plan_startDate` date DEFAULT NULL,
   `Plan_endDate` date DEFAULT NULL,
-  `Plan_app_Acronym` varchar(50) DEFAULT NULL,
-  PRIMARY KEY (`Plan_MVP_name`),
-  UNIQUE KEY `Plan_MVP_name_UNIQUE` (`Plan_MVP_name`)
+  `Plan_app_Acronym` varchar(50) NOT NULL,
+  PRIMARY KEY (`Plan_MVP_name`,`Plan_app_Acronym`),
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 
 
