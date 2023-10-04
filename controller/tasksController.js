@@ -174,7 +174,6 @@ const getAllTasksByAcronym = async (req, res, next) => {
 const createTask = async (req, res, next) => {
   const myUsername = await checkValidUser(req);
 
-  // TOOO: Add checkgroup is PL
   if (myUsername) {
     const {
       Task_name,
@@ -219,20 +218,19 @@ const createTask = async (req, res, next) => {
           Task_createDate,
         ];
         const results = await dbQuery(sql, queryArr);
-        // res.status(200).send(results);
+        // update App RN
+        try {
+          const { Task_app_Acronym } = req.body;
+          const sql =
+            "UPDATE applications SET APP_Rnumber = APP_Rnumber+1 WHERE APP_ACRONYM = ?";
+          const queryArr = [Task_app_Acronym];
+          const results2 = await dbQuery(sql, queryArr);
+          res.status(200).send(results2);
+        } catch (error) {
+          res.status(500).send("Database transaction/connection error");
+        }
       } catch (error) {
         console.log(error);
-        res.status(500).send("Database transaction/connection error");
-      }
-
-      try {
-        const { Task_app_Acronym } = req.body;
-        const sql =
-          "UPDATE applications SET APP_Rnumber = APP_Rnumber+1 WHERE APP_ACRONYM = ?";
-        const queryArr = [Task_app_Acronym];
-        const results2 = await dbQuery(sql, queryArr);
-        res.status(200).send(results2);
-      } catch (error) {
         res.status(500).send("Database transaction/connection error");
       }
     } else {
