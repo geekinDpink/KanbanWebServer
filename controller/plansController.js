@@ -78,8 +78,8 @@ const createPlan = async (req, res, next) => {
         "INSERT INTO plans (Plan_MVP_name, Plan_startDate, Plan_endDate, Plan_app_Acronym) VALUES (?,?,?,?)";
       const queryArr = [
         Plan_MVP_name,
-        Plan_startDate,
-        Plan_endDate,
+        Plan_startDate ? Plan_startDate : null,
+        Plan_endDate ? Plan_endDate : null,
         Plan_app_Acronym,
       ];
       const results = await dbQuery(sql, queryArr);
