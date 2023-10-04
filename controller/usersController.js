@@ -18,7 +18,7 @@ const checkValidUser = async (req) => {
     let queryArr = [];
     try {
       verifyJWTRes = await jwt.verify(token, process.env.JWT_SECRET);
-      console.log("verifyResOfJWT2", verifyJWTRes);
+      // console.log("verifyResOfJWT2", verifyJWTRes);
       queryArr = [verifyJWTRes.username];
     } catch (error) {
       //res.sendStatus(403).send("Invalid Token");

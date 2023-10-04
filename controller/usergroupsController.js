@@ -7,14 +7,14 @@ const jwt = require("jsonwebtoken");
 const checkValidUser = async (req) => {
   const authHeader = req.headers.authorization;
 
-  console.log("checkValidUser", authHeader);
+  // console.log("checkValidUser", authHeader);
   if (authHeader) {
     const token = authHeader.split(" ")[1];
     let verifyJWTRes = {};
     let queryArr = [];
     try {
       verifyJWTRes = await jwt.verify(token, process.env.JWT_SECRET);
-      console.log("verifyResOfJWTgrp", verifyJWTRes);
+      // console.log("verifyResOfJWTgrp", verifyJWTRes);
       queryArr = [verifyJWTRes.username];
     } catch (error) {
       //res.sendStatus(403).send("Invalid Token");
