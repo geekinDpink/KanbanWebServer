@@ -1,4 +1,5 @@
-const express = require("express");const session = require("express-session");
+const express = require("express");
+const session = require("express-session");
 const bodyParser = require("body-parser");
 const config = require("./config/config");
 const cors = require("cors");
@@ -51,7 +52,7 @@ router.route("/app").put(applicationsController.editApplication);
 // Plan
 ////////////////////////////////
 router.route("/plan").post(plansController.createPlan);
-router.route("/plans").post(plansController.getAllPlans);
+router.route("/plans/acronym").post(plansController.getAllPlans);
 
 /////////////////////////////////
 // Task

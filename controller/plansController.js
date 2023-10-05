@@ -100,7 +100,7 @@ const createPlan = async (req, res, next) => {
 };
 
 ////////////////////////////////////////////////////////////
-// Get All Plans
+// Get All Plans By Acronym
 /////////////////////////////////////////////////////////
 const getAllPlans = async (req, res, next) => {
   const myUsername = await checkValidUser(req);
