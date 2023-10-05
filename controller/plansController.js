@@ -125,7 +125,35 @@ const getAllPlans = async (req, res, next) => {
   }
 };
 
+////////////////////////////////////////////////////////////
+// Get Plan By Acronym and Name
+/////////////////////////////////////////////////////////
+const getPlanByAcronymAndName = async (req, res, next) => {
+  const myUsername = await checkValidUser(req);
+
+  if (myUsername) {
+    try {
+      const { Plan_app_Acronym, Plan_MVP_name } = req.body;
+      const sql =
+        "SELECT * FROM plans WHERE Plan_app_Acronym = ? AND Plan_MVP_name = ?";
+      const queryArr = [Plan_app_Acronym, Plan_MVP_name];
+      const results = await dbQuery(sql, queryArr);
+      if (results.length > 0) {
+        res.status(200).send(results);
+      } else {
+        res.status(404).send("No plan found");
+      }
+    } catch (error) {
+      console.log(error);
+      res.status(500).send("Database transaction/connection error");
+    }
+  } else {
+    res.status(403).send("Not authorised");
+  }
+};
+
 exports.plansController = {
   createPlan,
   getAllPlans,
+  getPlanByAcronymAndName,
 };

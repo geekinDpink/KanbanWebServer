@@ -53,6 +53,9 @@ router.route("/app").put(applicationsController.editApplication);
 ////////////////////////////////
 router.route("/plan").post(plansController.createPlan);
 router.route("/plans/acronym").post(plansController.getAllPlans);
+router
+  .route("/plan/acronym/name")
+  .post(plansController.getPlanByAcronymAndName);
 
 /////////////////////////////////
 // Task
