@@ -345,7 +345,7 @@ const demoteTask = async (req, res, next) => {
 
   // TOOO: Add checkgroup is PL
   if (myUsername) {
-    const { Task_id, Add_Task_Notes } = req.body;
+    const { Task_id, Add_Task_Notes, Task_plan } = req.body;
     let currentTaskState;
 
     try {
@@ -378,8 +378,14 @@ const demoteTask = async (req, res, next) => {
             const mergedNote = `${currentNote}\n\n\n${oldNotes}`;
             try {
               const sql =
-                "UPDATE tasks SET Task_state = ?, Task_owner = ?, Task_notes = ? WHERE (Task_id = ?)";
-              const queryArr = [newTaskState, myUsername, mergedNote, Task_id];
+                "UPDATE tasks SET Task_state = ?, Task_owner = ?, Task_notes = ?, Task_plan = ? WHERE (Task_id = ?)";
+              const queryArr = [
+                newTaskState,
+                myUsername,
+                mergedNote,
+                Task_plan,
+                Task_id,
+              ];
               const resultsUpdate = await dbQuery(sql, queryArr);
               res.status(200).send(newTaskState);
             } catch (error) {
