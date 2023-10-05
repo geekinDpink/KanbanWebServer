@@ -470,56 +470,78 @@ const checkValidUserAndIsAdmin = async (req, res, next) => {
 };
 
 ////////////////////////////////////////////////////////////////
-// Check Usergroup Permits for Kanban Page Load
+// Check Usergroup Permits (Task, Plan and App) for Kanban Page Load
+// If there is no app acronym, omit task and check plan and app permit
 ////////////////////////////////////////////////////////////////
 const checkPermit = async (req, res, next) => {
   const myUsername = await checkValidUser(req);
   const { App_Acronym } = req.body;
-  try {
-    const sql =
-      "SELECT App_Permit_Create, App_Permit_Open, App_Permit_ToDoList, App_Permit_Doing, App_Permit_Done FROM applications WHERE App_Acronym = ?";
-    const queryArr = [App_Acronym];
-    const results = await dbQuery(sql, queryArr);
-
-    if (results.length > 0) {
-      const {
-        App_Permit_Create,
-        App_Permit_Open,
-        App_Permit_ToDoList,
-        App_Permit_Doing,
-        App_Permit_Done,
-      } = results[0];
-
-      // Task Permit
-      const isCreate = await checkGroup(myUsername, App_Permit_Create);
-      const isOpen = await checkGroup(myUsername, App_Permit_Open);
-      const isTodolist = await checkGroup(myUsername, App_Permit_ToDoList);
-      const isDoing = await checkGroup(myUsername, App_Permit_Doing);
-      const isDone = await checkGroup(myUsername, App_Permit_Done);
-      // Plan Permit
-      const isPlan = await checkGroup(myUsername, "project manager");
-      // App Permit
-      const isApp = await checkGroup(myUsername, "project lead");
-
-      const permits = {
-        isCreate: isCreate,
-        isOpen: isOpen,
-        isTodolist: isTodolist,
-        isDoing: isDoing,
-        isDone: isDone,
-        isPlan: isPlan,
-        isApp: isApp,
-      };
-      res.status(200).send(permits);
-    } else {
-      res.status(404).send("App not found");
-    }
-  } catch (error) {
-    res.status(500).send("Database transaction/connection error");
-  }
 
   // user can only search their own details
   if (myUsername) {
+    if (App_Acronym) {
+      try {
+        const sql =
+          "SELECT App_Permit_Create, App_Permit_Open, App_Permit_ToDoList, App_Permit_Doing, App_Permit_Done FROM applications WHERE App_Acronym = ?";
+        const queryArr = [App_Acronym];
+        const results = await dbQuery(sql, queryArr);
+
+        if (results.length > 0) {
+          const {
+            App_Permit_Create,
+            App_Permit_Open,
+            App_Permit_ToDoList,
+            App_Permit_Doing,
+            App_Permit_Done,
+          } = results[0];
+
+          // Task Permit
+          const isCreate = await checkGroup(myUsername, App_Permit_Create);
+          const isOpen = await checkGroup(myUsername, App_Permit_Open);
+          const isTodolist = await checkGroup(myUsername, App_Permit_ToDoList);
+          const isDoing = await checkGroup(myUsername, App_Permit_Doing);
+          const isDone = await checkGroup(myUsername, App_Permit_Done);
+          // Plan Permit
+          const isPlan = await checkGroup(myUsername, "project manager");
+          // App Permit
+          const isApp = await checkGroup(myUsername, "project lead");
+
+          const permits = {
+            isCreate: isCreate,
+            isOpen: isOpen,
+            isTodolist: isTodolist,
+            isDoing: isDoing,
+            isDone: isDone,
+            isPlan: isPlan,
+            isApp: isApp,
+          };
+          res.status(200).send(permits);
+        } else {
+          res.status(404).send("App not found");
+        }
+      } catch (error) {
+        res.status(500).send("Database transaction/connection error");
+      }
+    } else {
+      try {
+        // Plan Permit
+        const isPlan = await checkGroup(myUsername, "project manager");
+        // App Permit
+        const isApp = await checkGroup(myUsername, "project lead");
+        const permits = {
+          isCreate: false,
+          isOpen: false,
+          isTodolist: false,
+          isDoing: false,
+          isDone: false,
+          isPlan: isPlan,
+          isApp: isApp,
+        };
+        res.status(200).send(permits);
+      } catch (error) {
+        res.status(403).send("Database transaction/connection error");
+      }
+    }
   } else {
     res.status(403).send("Not authorised");
   }
