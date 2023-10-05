@@ -2,8 +2,7 @@ R2
 TODO
 Create and update app validation (Especially RN)
 Validate insert Plan dup
-Create App - project lead
-Create Plan
+
 Plan name unique?
 
 Done
@@ -14,6 +13,8 @@ Notes Generation
 Send Email when done
 Dynamic auth
 Change Owner when add note (on top of promote and demote)
+Hardcode permit for Create App and Edit, project lead
+Hardcode permit for Create Plan and Edit, project manager
 
 ---
 
