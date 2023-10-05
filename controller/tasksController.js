@@ -427,8 +427,9 @@ const addTaskNotes = async (req, res, next) => {
         const mergedNote = `${currentNote}\n\n\n${oldNotes}`;
         try {
           // Update to db
-          const sql = "UPDATE tasks SET Task_notes = ? WHERE Task_id = ?";
-          const queryArr = [mergedNote, Task_id];
+          const sql =
+            "UPDATE tasks SET Task_notes = ?, Task_owner = ? WHERE Task_id = ?";
+          const queryArr = [mergedNote, myUsername, Task_id];
           const resultsUpdate = await dbQuery(sql, queryArr);
           res.status(200).send(resultsUpdate);
         } catch (error) {

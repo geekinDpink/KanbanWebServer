@@ -13,6 +13,7 @@ API promote task, demote task, save note
 Notes Generation
 Send Email when done
 Dynamic auth
+Change Owner when add note (on top of promote and demote)
 
 ---
 
