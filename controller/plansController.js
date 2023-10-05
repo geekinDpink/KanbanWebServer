@@ -63,7 +63,7 @@ const checkGroup = async (username, groupName) => {
 };
 
 ////////////////////////////////////////////////////////////
-// Get All Application
+// Create Plan
 /////////////////////////////////////////////////////////
 const createPlan = async (req, res, next) => {
   const myUsername = await checkValidUser(req);
@@ -71,16 +71,22 @@ const createPlan = async (req, res, next) => {
 
   if (myUsername && isProjectManager) {
     try {
-      const { Plan_MVP_name, Plan_startDate, Plan_endDate, Plan_app_Acronym } =
-        req.body;
+      const {
+        Plan_MVP_name,
+        Plan_startDate,
+        Plan_endDate,
+        Plan_app_Acronym,
+        Plan_color,
+      } = req.body;
 
       const sql =
-        "INSERT INTO plans (Plan_MVP_name, Plan_startDate, Plan_endDate, Plan_app_Acronym) VALUES (?,?,?,?)";
+        "INSERT INTO plans (Plan_MVP_name, Plan_startDate, Plan_endDate, Plan_app_Acronym, Plan_color) VALUES (?,?,?,?,?)";
       const queryArr = [
         Plan_MVP_name,
         Plan_startDate ? Plan_startDate : null,
         Plan_endDate ? Plan_endDate : null,
         Plan_app_Acronym,
+        Plan_color,
       ];
       const results = await dbQuery(sql, queryArr);
       res.status(200).send(results);
@@ -94,7 +100,7 @@ const createPlan = async (req, res, next) => {
 };
 
 ////////////////////////////////////////////////////////////
-// Get All Application
+// Get All Plans
 /////////////////////////////////////////////////////////
 const getAllPlans = async (req, res, next) => {
   const myUsername = await checkValidUser(req);
