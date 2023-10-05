@@ -490,11 +490,16 @@ const checkPermit = async (req, res, next) => {
         App_Permit_Done,
       } = results[0];
 
+      // Task Permit
       const isCreate = await checkGroup(myUsername, App_Permit_Create);
       const isOpen = await checkGroup(myUsername, App_Permit_Open);
       const isTodolist = await checkGroup(myUsername, App_Permit_ToDoList);
       const isDoing = await checkGroup(myUsername, App_Permit_Doing);
       const isDone = await checkGroup(myUsername, App_Permit_Done);
+      // Plan Permit
+      const isPlan = await checkGroup(myUsername, "project manager");
+      // App Permit
+      const isApp = await checkGroup(myUsername, "project lead");
 
       const permits = {
         isCreate: isCreate,
@@ -502,6 +507,8 @@ const checkPermit = async (req, res, next) => {
         isTodolist: isTodolist,
         isDoing: isDoing,
         isDone: isDone,
+        isPlan: isPlan,
+        isApp: isApp,
       };
       res.status(200).send(permits);
     } else {
