@@ -44,7 +44,6 @@ const findUser2 = async (req, res, next) => {
 // for login, find user
 const findUser = (req, res, next) => {
   let { username, password } = req.body;
-  console.log("Hi0");
 
   if (username && password) {
     // check if password matches db hash password and generate jwt as token {status, token}
@@ -54,11 +53,9 @@ const findUser = (req, res, next) => {
       function (err, results) {
         // Error handling to catch faulty db connection and query + return empty results due to non-match in db
         if (err) {
-          console.log("Hi1");
           res.status(500).json(err);
         } else {
           if (results.length > 0) {
-            console.log("Hi2");
             const {
               username: dbUser,
               password: dbPass,
@@ -81,7 +78,6 @@ const findUser = (req, res, next) => {
               }
             });
           } else {
-            console.log("Hi3");
             res.status(404).send("User Account Not Found");
           }
         }
@@ -175,7 +171,6 @@ const updateUserDetails = async (req, res, next) => {
   } else {
     // myusergroup is not admin; dev, pm or pl
     if (password && saltRounds && email && username) {
-      console.log("not admin");
       updateCertainFields(password, saltRounds, email, username, res);
     } else {
       res.status(404).end("Invalid Request due to missing parameters");
