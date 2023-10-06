@@ -100,7 +100,7 @@ const createPlan = async (req, res, next) => {
 };
 
 ////////////////////////////////////////////////////////////
-// Get All Plans By Acronym
+// Get All Plans By Acronym - For dropdown list of plans and Edit Plan
 /////////////////////////////////////////////////////////
 const getAllPlans = async (req, res, next) => {
   const myUsername = await checkValidUser(req);
@@ -126,10 +126,11 @@ const getAllPlans = async (req, res, next) => {
 };
 
 ////////////////////////////////////////////////////////////
-// Get Plan By Acronym and Name
+// Get Plan By Acronym and Name - For Edit Plan Page
 /////////////////////////////////////////////////////////
 const getPlanByAcronymAndName = async (req, res, next) => {
   const myUsername = await checkValidUser(req);
+  const isProjectManager = await checkGroup(myUsername, "project manager");
 
   if (myUsername) {
     try {
@@ -152,8 +153,45 @@ const getPlanByAcronymAndName = async (req, res, next) => {
   }
 };
 
+////////////////////////////////////////////////////////////
+// Edit Plan
+/////////////////////////////////////////////////////////
+const editPlan = async (req, res, next) => {
+  const myUsername = await checkValidUser(req);
+  const isProjectManager = await checkGroup(myUsername, "project manager");
+
+  if (myUsername && isProjectManager) {
+    try {
+      const {
+        Plan_app_Acronym,
+        Plan_MVP_name,
+        Plan_startDate,
+        Plan_endDate,
+        Plan_color,
+      } = req.body;
+      const sql =
+        "UPDATE plans SET Plan_startDate = COALESCE(?,Plan_startDate), Plan_endDate = COALESCE(?,Plan_endDate), Plan_color = COALESCE(?,Plan_color) WHERE Plan_app_Acronym = ? AND Plan_MVP_name = ?";
+      const queryArr = [
+        Plan_startDate,
+        Plan_endDate,
+        Plan_color,
+        Plan_app_Acronym,
+        Plan_MVP_name,
+      ];
+      const results = await dbQuery(sql, queryArr);
+      res.status(200).send(results);
+    } catch (error) {
+      console.log(error);
+      res.status(500).send("Database transaction/connection error");
+    }
+  } else {
+    res.status(403).send("Not authorised");
+  }
+};
+
 exports.plansController = {
   createPlan,
   getAllPlans,
   getPlanByAcronymAndName,
+  editPlan,
 };

@@ -56,6 +56,7 @@ router.route("/plans/acronym").post(plansController.getAllPlans);
 router
   .route("/plan/acronym/name")
   .post(plansController.getPlanByAcronymAndName);
+router.route("/plan/acronym/name").put(plansController.editPlan);
 
 /////////////////////////////////
 // Task
