@@ -2,6 +2,7 @@ R2
 TODO
 Create and update app validation (Especially RN)
 Validate insert Plan dup
+Get All Plans - no results - multiple toast in Create Plan
 
 Plan name unique?
 
@@ -110,7 +111,7 @@ CREATE TABLE IF NOT EXISTS `plans` (
   `Plan_endDate` date DEFAULT NULL,
   `Plan_app_Acronym` varchar(50) NOT NULL,
   `Plan_color` varchar(10) DEFAULT NULL,
-  PRIMARY KEY (`Plan_MVP_name`,`Plan_app_Acronym`),
+  PRIMARY KEY (`Plan_MVP_name`,`Plan_app_Acronym`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 
 
