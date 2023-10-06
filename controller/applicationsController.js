@@ -99,7 +99,6 @@ const getAllApplication = async (req, res, next) => {
 // Get Application By Acronym
 /////////////////////////////////////////////////////////
 const getAppByAcronym = async (req, res, next) => {
-  console.log("getAppByAcronym req", req);
   const myUsername = await checkValidUser(req);
   if (myUsername) {
     const { App_Acronym } = req.body;
