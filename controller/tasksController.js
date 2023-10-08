@@ -196,42 +196,46 @@ const createTask = async (req, res, next) => {
     const isPermitted = await checkGroup(myUsername, authorisedUserGrp);
 
     if (isPermitted) {
-      try {
-        // Add timestamp and other details to task note
-        const timeStamp = moment(new Date()).format("YYYY-MM-DD h:mmA");
-        const currentNote = `${timeStamp}\nUser: ${myUsername}\nTask State: ${Task_state}\nAction: Created Task\nTask Note:\n${
-          Add_task_notes ?? ""
-        }`;
-        const sql =
-          "INSERT INTO tasks (Task_name, Task_description, Task_notes, Task_id, Task_plan, Task_app_Acronym, Task_state, Task_creator, Task_owner, Task_createDate) VALUES (?,?,?,?,?,?,?,?,?,?)";
-
-        const queryArr = [
-          Task_name,
-          Task_description,
-          currentNote,
-          Task_id,
-          Task_plan,
-          Task_app_Acronym,
-          Task_state,
-          Task_creator,
-          Task_owner,
-          Task_createDate,
-        ];
-        const results = await dbQuery(sql, queryArr);
-        // update App RN
+      if (Task_name && Task_description && Task_app_Acronym && Task_id) {
         try {
-          const { Task_app_Acronym } = req.body;
+          // Add timestamp and other details to task note
+          const timeStamp = moment(new Date()).format("YYYY-MM-DD h:mmA");
+          const currentNote = `${timeStamp}\nUser: ${myUsername}\nTask State: ${Task_state}\nAction: Created Task\nTask Note:\n${
+            Add_task_notes ?? ""
+          }`;
           const sql =
-            "UPDATE applications SET APP_Rnumber = APP_Rnumber+1 WHERE APP_ACRONYM = ?";
-          const queryArr = [Task_app_Acronym];
-          const results2 = await dbQuery(sql, queryArr);
-          res.status(200).send(results2);
+            "INSERT INTO tasks (Task_name, Task_description, Task_notes, Task_id, Task_plan, Task_app_Acronym, Task_state, Task_creator, Task_owner, Task_createDate) VALUES (?,?,?,?,?,?,?,?,?,?)";
+
+          const queryArr = [
+            Task_name,
+            Task_description,
+            currentNote,
+            Task_id,
+            Task_plan,
+            Task_app_Acronym,
+            Task_state,
+            Task_creator,
+            Task_owner,
+            Task_createDate,
+          ];
+          const results = await dbQuery(sql, queryArr);
+          // update App RN
+          try {
+            const { Task_app_Acronym } = req.body;
+            const sql =
+              "UPDATE applications SET APP_Rnumber = APP_Rnumber+1 WHERE APP_ACRONYM = ?";
+            const queryArr = [Task_app_Acronym];
+            const results2 = await dbQuery(sql, queryArr);
+            res.status(200).send(results2);
+          } catch (error) {
+            res.status(500).send("Database transaction/connection error");
+          }
         } catch (error) {
+          console.log(error);
           res.status(500).send("Database transaction/connection error");
         }
-      } catch (error) {
-        console.log(error);
-        res.status(500).send("Database transaction/connection error");
+      } else {
+        res.status(404).send("Invalid Request due to missing parameters");
       }
     } else {
       console.log("Not Task Owner");
@@ -250,14 +254,22 @@ const getTaskById = async (req, res, next) => {
 
   if (myUsername) {
     const { Task_id } = req.body;
-    try {
-      const sql = "SELECT * FROM tasks WHERE Task_id = ?";
-      const queryArr = [Task_id];
-      const results = await dbQuery(sql, queryArr);
-      res.status(200).send(results);
-    } catch (error) {
-      console.log(error);
-      res.status(500).send("Database transaction/connection error");
+    if (Task_id) {
+      try {
+        const sql = "SELECT * FROM tasks WHERE Task_id = ?";
+        const queryArr = [Task_id];
+        const results = await dbQuery(sql, queryArr);
+        if (results.length > 0) {
+          res.status(200).send(results);
+        } else {
+          res.status(404).send("No record found");
+        }
+      } catch (error) {
+        console.log(error);
+        res.status(500).send("Database transaction/connection error");
+      }
+    } else {
+      res.status(404).send("Invalid Request due to missing parameters");
     }
   } else {
     res.status(403).send("Not authorised");
@@ -275,75 +287,81 @@ const promoteTask = async (req, res, next) => {
     const { Task_id, Add_Task_Notes, Task_plan } = req.body;
     let currentTaskState;
 
-    try {
-      const sql =
-        "SELECT Task_state, Task_notes, Task_app_Acronym, Task_plan FROM tasks WHERE Task_id = ?";
-      const queryArr = [Task_id];
-      const results = await dbQuery(sql, queryArr);
-      if (results.length > 0) {
-        // From Task State Array, find index and progress to the next state
-        currentTaskState = results[0].Task_state;
-        const taskStateArr = ["open", "todolist", "doing", "done", "closed"];
-        const taskStateArrIndex = taskStateArr.indexOf(currentTaskState);
-        const newTaskState = taskStateArr[taskStateArrIndex + 1];
+    if (Task_id) {
+      try {
+        const sql =
+          "SELECT Task_state, Task_notes, Task_app_Acronym, Task_plan FROM tasks WHERE Task_id = ?";
+        const queryArr = [Task_id];
+        const results = await dbQuery(sql, queryArr);
+        if (results.length > 0) {
+          // From Task State Array, find index and progress to the next state
+          currentTaskState = results[0].Task_state;
+          const taskStateArr = ["open", "todolist", "doing", "done", "closed"];
+          const taskStateArrIndex = taskStateArr.indexOf(currentTaskState);
+          const newTaskState = taskStateArr[taskStateArrIndex + 1];
 
-        // Check App Permit of the task state and check if username is part of task owner
-        const authorisedUserGrp = await getAuthorisedUserGrp(
-          results[0].Task_app_Acronym,
-          currentTaskState
-        );
-        const isPermitted = await checkGroup(myUsername, authorisedUserGrp);
+          // Check App Permit of the task state and check if username is part of task owner
+          const authorisedUserGrp = await getAuthorisedUserGrp(
+            results[0].Task_app_Acronym,
+            currentTaskState
+          );
+          const isPermitted = await checkGroup(myUsername, authorisedUserGrp);
 
-        if (isPermitted) {
-          if (taskStateArrIndex < taskStateArr.length - 1) {
-            // Check if there is a change of plan when promoting
-            if (Task_plan === results[0].Task_plan) {
-              // Add Username and Task state to task note
-              const oldNotes = results[0].Task_notes;
-              const timeStamp = moment(new Date()).format("YYYY-MM-DD h:mmA");
-              const currentNote = `${timeStamp}\nUser: ${myUsername}\nTask State: ${currentTaskState}\nAction: Promote to ${newTaskState}\nTask Note:\n${
-                Add_Task_Notes ?? ""
-              }`;
-              const mergedNote = `${currentNote}\n\n\n${oldNotes}`;
-              try {
-                const sql =
-                  "UPDATE tasks SET Task_state = ?, Task_owner = ?, Task_notes = ? WHERE (Task_id = ?)";
+          if (isPermitted) {
+            if (taskStateArrIndex < taskStateArr.length - 1) {
+              // Check if there is a change of plan when promoting
+              if (Task_plan === results[0].Task_plan) {
+                // Add Username and Task state to task note
+                const oldNotes = results[0].Task_notes;
+                const timeStamp = moment(new Date()).format("YYYY-MM-DD h:mmA");
+                const currentNote = `${timeStamp}\nUser: ${myUsername}\nTask State: ${currentTaskState}\nAction: Promote to ${newTaskState}\nTask Note:\n${
+                  Add_Task_Notes ?? ""
+                }`;
+                const mergedNote = `${currentNote}\n\n\n${oldNotes}`;
+                try {
+                  const sql =
+                    "UPDATE tasks SET Task_state = ?, Task_owner = ?, Task_notes = ? WHERE (Task_id = ?)";
 
-                const queryArr = [
-                  newTaskState,
-                  myUsername,
-                  mergedNote,
-                  Task_id,
-                ];
-                const resultsUpdate = await dbQuery(sql, queryArr);
-                if (resultsUpdate) {
-                  if (newTaskState === "done") {
-                    console.log("Try to email PL");
-                    emailProjectLead();
+                  const queryArr = [
+                    newTaskState,
+                    myUsername,
+                    mergedNote,
+                    Task_id,
+                  ];
+                  const resultsUpdate = await dbQuery(sql, queryArr);
+                  if (resultsUpdate) {
+                    if (newTaskState === "done") {
+                      console.log("Try to email PL");
+                      emailProjectLead();
+                    }
+                    res.status(200).send(newTaskState);
                   }
-                  res.status(200).send(newTaskState);
+                } catch (error) {
+                  console.log(error);
+                  res.status(500).send("Database transaction/connection error");
                 }
-              } catch (error) {
-                console.log(error);
-                res.status(500).send("Database transaction/connection error");
+              } else {
+                res.status(403).send("Unable to change plan");
               }
             } else {
-              res.status(403).send("Unable to change plan");
+              res.status(403).send("Unable to promote state further");
             }
           } else {
-            res.status(403).send("Unable to promote state further");
+            console.log("Not Task Owner");
+            res.status(403).send("Not Permitted");
           }
         } else {
-          console.log("Not Task Owner");
-          res.status(403).send("Not Permitted");
+          res.status(404).send("Task record not found");
         }
-      } else {
-        res.status(404).send("Task record not found");
+      } catch (error) {
+        console.log(error);
+        res.status(500).send("Database transaction/connection error");
       }
-    } catch (error) {
-      console.log(error);
-      res.status(500).send("Database transaction/connection error");
+    } else {
+      res.status(404).send("Invalid Request due to missing parameters");
     }
+  } else {
+    res.status(403).send("Not authorised");
   }
 };
 
