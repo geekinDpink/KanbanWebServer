@@ -66,11 +66,8 @@ const checkGroup = async (username, groupName) => {
 // Functions for validating inputs
 /////////////////////////////////////////////////////////
 const valRnumber = (rnumber) => {
-  console.log("rnumber", typeof rnumber);
-
-  if (!rnumber) {
-    return "No running number provided";
-  } else if (rnumber < 0) {
+  // Assuming rnumber exist
+  if (rnumber < 0) {
     return "Rnumber:Cannot be negative";
   } else if (!Number.isInteger(rnumber)) {
     // Detech decimal and string
@@ -164,31 +161,35 @@ const createApplication = async (req, res, next) => {
       App_Permit_Done,
     } = req.body;
 
-    const invalidRnumber = valRnumber(App_Rnumber);
-    if (!invalidRnumber) {
-      try {
-        const sql =
-          "INSERT INTO applications (App_Acronym, App_Description, App_Rnumber, App_startDate, App_endDate, App_permit_Create, App_permit_Open, App_permit_toDoList, App_permit_Doing, App_permit_Done) VALUES (?,?,?,?,?,?,?,?,?,?)";
-        const queryArr = [
-          App_Acronym,
-          App_Description,
-          App_Rnumber,
-          App_StartDate,
-          App_EndDate,
-          App_Permit_Create,
-          App_Permit_Open,
-          App_Permit_ToDoList,
-          App_Permit_Doing,
-          App_Permit_Done,
-        ];
-        const results = await dbQuery(sql, queryArr);
-        res.status(200).send(results);
-      } catch (error) {
-        console.log(error);
-        res.status(500).send("Database transaction/connection error");
+    if (App_Acronym && App_Description && App_Rnumber !== "") {
+      const invalidRnumber = valRnumber(App_Rnumber);
+      if (!invalidRnumber) {
+        try {
+          const sql =
+            "INSERT INTO applications (App_Acronym, App_Description, App_Rnumber, App_startDate, App_endDate, App_permit_Create, App_permit_Open, App_permit_toDoList, App_permit_Doing, App_permit_Done) VALUES (?,?,?,?,?,?,?,?,?,?)";
+          const queryArr = [
+            App_Acronym,
+            App_Description,
+            App_Rnumber,
+            App_StartDate,
+            App_EndDate,
+            App_Permit_Create,
+            App_Permit_Open,
+            App_Permit_ToDoList,
+            App_Permit_Doing,
+            App_Permit_Done,
+          ];
+          const results = await dbQuery(sql, queryArr);
+          res.status(200).send(results);
+        } catch (error) {
+          console.log(error);
+          res.status(500).send("Database transaction/connection error");
+        }
+      } else {
+        res.status(404).send(invalidRnumber);
       }
     } else {
-      res.status(404).send(invalidRnumber);
+      res.status(404).send("Invalid Request due to missing parameters");
     }
   } else {
     console.log("Not PL");
