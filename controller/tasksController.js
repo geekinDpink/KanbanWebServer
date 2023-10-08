@@ -148,20 +148,24 @@ const emailProjectLead = async () => {
 const getAllTasksByAcronym = async (req, res, next) => {
   const myUsername = await checkValidUser(req);
   if (myUsername) {
-    try {
-      const { Task_app_Acronym } = req.body;
-      const sql = "SELECT * FROM tasks WHERE Task_app_Acronym = ?";
-      const queryArr = [Task_app_Acronym];
-      const results = await dbQuery(sql, queryArr);
+    const { Task_app_Acronym } = req.body;
+    if (Task_app_Acronym) {
+      try {
+        const sql = "SELECT * FROM tasks WHERE Task_app_Acronym = ?";
+        const queryArr = [Task_app_Acronym];
+        const results = await dbQuery(sql, queryArr);
 
-      if (results.length > 0) {
-        res.status(200).send(results);
-      } else {
-        res.status(404).send("No record found");
+        if (results.length > 0) {
+          res.status(200).send(results);
+        } else {
+          res.status(404).send("No record found");
+        }
+      } catch (error) {
+        console.log(error);
+        res.status(500).send("Database transaction/connection error");
       }
-    } catch (error) {
-      console.log(error);
-      res.status(500).send("Database transaction/connection error");
+    } else {
+      res.status(404).send("Invalid Request due to missing parameters");
     }
   } else {
     res.status(403).send("Not authorised");
@@ -450,48 +454,53 @@ const addTaskNotes = async (req, res, next) => {
   const myUsername = await checkValidUser(req);
   if (myUsername) {
     const { Add_Task_Notes, Task_id } = req.body;
+    if (Task_id) {
+      try {
+        // Query db to get task state and existing notes to add on
+        const sql =
+          "SELECT Task_state, Task_notes, Task_app_Acronym FROM tasks WHERE Task_id = ?";
+        const queryArr = [Task_id];
+        const results = await dbQuery(sql, queryArr);
+        if (results.length > 0) {
+          // Generate task details and add on to existing note
+          const currentTaskState = results[0].Task_state;
 
-    try {
-      // Query db to get task state and existing notes to add on
-      const sql =
-        "SELECT Task_state, Task_notes, Task_app_Acronym FROM tasks WHERE Task_id = ?";
-      const queryArr = [Task_id];
-      const results = await dbQuery(sql, queryArr);
-      if (results.length > 0) {
-        // Generate task details and add on to existing note
-        const currentTaskState = results[0].Task_state;
-
-        // Check App Permit of the task state and check if username is part of task owner
-        const authorisedUserGrp = await getAuthorisedUserGrp(
-          results[0].Task_app_Acronym,
-          currentTaskState
-        );
-        const isPermitted = await checkGroup(myUsername, authorisedUserGrp);
-        if (isPermitted) {
-          // Add Username and Task state to task note
-          const oldNotes = results[0].Task_notes;
-          const timeStamp = moment(new Date()).format("YYYY-MM-DD h:mmA");
-          const currentNote = `${timeStamp}\nUser: ${myUsername}\nTask State: ${currentTaskState}\nAction: Add Note\nTask Note:\n${
-            Add_Task_Notes ?? ""
-          }`;
-          const mergedNote = `${currentNote}\n\n\n${oldNotes}`;
-          try {
-            // Update to db
-            const sql =
-              "UPDATE tasks SET Task_notes = ?, Task_owner = ? WHERE Task_id = ?";
-            const queryArr = [mergedNote, myUsername, Task_id];
-            const resultsUpdate = await dbQuery(sql, queryArr);
-            res.status(200).send(resultsUpdate);
-          } catch (error) {
-            console.log(error);
-            res.status(500).send("Database transaction/connection error");
+          // Check App Permit of the task state and check if username is part of task owner
+          const authorisedUserGrp = await getAuthorisedUserGrp(
+            results[0].Task_app_Acronym,
+            currentTaskState
+          );
+          const isPermitted = await checkGroup(myUsername, authorisedUserGrp);
+          if (isPermitted) {
+            // Add Username and Task state to task note
+            const oldNotes = results[0].Task_notes;
+            const timeStamp = moment(new Date()).format("YYYY-MM-DD h:mmA");
+            const currentNote = `${timeStamp}\nUser: ${myUsername}\nTask State: ${currentTaskState}\nAction: Add Note\nTask Note:\n${
+              Add_Task_Notes ?? ""
+            }`;
+            const mergedNote = `${currentNote}\n\n\n${oldNotes}`;
+            try {
+              // Update to db
+              const sql =
+                "UPDATE tasks SET Task_notes = ?, Task_owner = ? WHERE Task_id = ?";
+              const queryArr = [mergedNote, myUsername, Task_id];
+              const resultsUpdate = await dbQuery(sql, queryArr);
+              res.status(200).send(resultsUpdate);
+            } catch (error) {
+              console.log(error);
+              res.status(500).send("Database transaction/connection error");
+            }
+          } else {
+            res.status(403).end("Not permitted");
           }
         } else {
-          res.status(403).end("Not permitted");
+          res.status(404).send("Task not found");
         }
+      } catch (err) {
+        res.status(500).send("Database transaction/connection error");
       }
-    } catch (err) {
-      res.status(404).send("Task not found");
+    } else {
+      res.status(404).send("Invalid Request due to missing parameters");
     }
   } else {
     res.status(403).send("Not authorised");
