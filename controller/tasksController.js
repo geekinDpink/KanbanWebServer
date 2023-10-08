@@ -313,39 +313,56 @@ const promoteTask = async (req, res, next) => {
 
           if (isPermitted) {
             if (taskStateArrIndex < taskStateArr.length - 1) {
-              // Check if there is a change of plan when promoting
-              if (Task_plan === results[0].Task_plan) {
-                // Add Username and Task state to task note
-                const oldNotes = results[0].Task_notes;
-                const timeStamp = moment(new Date()).format("YYYY-MM-DD h:mmA");
-                const currentNote = `${timeStamp}\nUser: ${myUsername}\nTask State: ${currentTaskState}\nAction: Promote to ${newTaskState}\nTask Note:\n${
-                  Add_Task_Notes ?? ""
-                }`;
-                const mergedNote = `${currentNote}\n\n\n${oldNotes}`;
-                try {
+              // Add Username and Task state to task note
+              const oldNotes = results[0].Task_notes;
+              const timeStamp = moment(new Date()).format("YYYY-MM-DD h:mmA");
+              const currentNote = `${timeStamp}\nUser: ${myUsername}\nTask State: ${currentTaskState}\nAction: Promote to ${newTaskState}\nTask Note:\n${
+                Add_Task_Notes ?? ""
+              }`;
+              const mergedNote = `${currentNote}\n\n\n${oldNotes}`;
+              try {
+                // If state is open, allow change of plan. Else check if there is a change of plan before promoting
+                if (currentTaskState === "open") {
                   const sql =
-                    "UPDATE tasks SET Task_state = ?, Task_owner = ?, Task_notes = ? WHERE (Task_id = ?)";
-
+                    "UPDATE tasks SET Task_state = ?, Task_owner = ?, Task_notes = ?, Task_plan = ? WHERE Task_id = ?";
+                  const queryArr = [
+                    newTaskState,
+                    myUsername,
+                    mergedNote,
+                    Task_plan,
+                    Task_id,
+                  ];
+                  const resultsUpdate = await dbQuery(sql, queryArr);
+                  if (resultsUpdate) {
+                    res.status(200).send(newTaskState);
+                  }
+                } else {
+                  const sql =
+                    "UPDATE tasks SET Task_state = ?, Task_owner = ?, Task_notes = ? WHERE Task_id = ?";
                   const queryArr = [
                     newTaskState,
                     myUsername,
                     mergedNote,
                     Task_id,
                   ];
-                  const resultsUpdate = await dbQuery(sql, queryArr);
-                  if (resultsUpdate) {
-                    if (newTaskState === "done") {
-                      console.log("Try to email PL");
-                      emailProjectLead();
+                  // Cannot change plan except for open state or done (demote)
+                  if (Task_plan !== results[0].Task_plan) {
+                    res.status(403).send("Unable to change plan");
+                  } else {
+                    const resultsUpdate = await dbQuery(sql, queryArr);
+                    // once update, email and notify Project lead
+                    if (resultsUpdate) {
+                      if (newTaskState === "done") {
+                        console.log("Try to email PL");
+                        emailProjectLead();
+                      }
+                      res.status(200).send(newTaskState);
                     }
-                    res.status(200).send(newTaskState);
                   }
-                } catch (error) {
-                  console.log(error);
-                  res.status(500).send("Database transaction/connection error");
                 }
-              } else {
-                res.status(403).send("Unable to change plan");
+              } catch (error) {
+                console.log(error);
+                res.status(500).send("Database transaction/connection error");
               }
             } else {
               res.status(403).send("Unable to promote state further");
