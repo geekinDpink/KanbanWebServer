@@ -203,38 +203,44 @@ const editApplication = async (req, res, next) => {
   const myUsername = await checkValidUser(req);
   const isProjectLead = await checkGroup(myUsername, "project lead");
   if (myUsername && isProjectLead) {
-    try {
-      const {
-        App_Acronym,
-        App_Description,
-        App_Rnumber,
-        App_StartDate,
-        App_EndDate,
-        App_Permit_Create,
-        App_Permit_Open,
-        App_Permit_ToDoList,
-        App_Permit_Doing,
-        App_Permit_Done,
-      } = req.body;
-      const sql =
-        "UPDATE applications SET App_Description = ?, App_Rnumber = ?, App_startDate = ?, App_endDate = ?, App_permit_Create=?, App_permit_Open=?, App_permit_toDoList = ?, App_permit_Doing = ?, App_permit_Done = ? WHERE App_Acronym = ?";
-      const queryArr = [
-        App_Description,
-        App_Rnumber,
-        App_StartDate,
-        App_EndDate,
-        App_Permit_Create,
-        App_Permit_Open,
-        App_Permit_ToDoList,
-        App_Permit_Doing,
-        App_Permit_Done,
-        App_Acronym,
-      ];
-      const results = await dbQuery(sql, queryArr);
-      res.status(200).send(results);
-    } catch (error) {
-      console.log(error);
-      res.status(500).send("Database transaction/connection error");
+    const {
+      App_Acronym,
+      App_Description,
+      App_Rnumber,
+      App_StartDate,
+      App_EndDate,
+      App_Permit_Create,
+      App_Permit_Open,
+      App_Permit_ToDoList,
+      App_Permit_Doing,
+      App_Permit_Done,
+    } = req.body;
+
+    const invalidRnumber = valRnumber(App_Rnumber);
+    if (!invalidRnumber) {
+      try {
+        const sql =
+          "UPDATE applications SET App_Description = ?, App_Rnumber = ?, App_startDate = ?, App_endDate = ?, App_permit_Create=?, App_permit_Open=?, App_permit_toDoList = ?, App_permit_Doing = ?, App_permit_Done = ? WHERE App_Acronym = ?";
+        const queryArr = [
+          App_Description,
+          App_Rnumber,
+          App_StartDate,
+          App_EndDate,
+          App_Permit_Create,
+          App_Permit_Open,
+          App_Permit_ToDoList,
+          App_Permit_Doing,
+          App_Permit_Done,
+          App_Acronym,
+        ];
+        const results = await dbQuery(sql, queryArr);
+        res.status(200).send(results);
+      } catch (error) {
+        console.log(error);
+        res.status(500).send("Database transaction/connection error");
+      }
+    } else {
+      res.status(404).send(invalidRnumber);
     }
   } else {
     res.status(403).send("Not authorised");
