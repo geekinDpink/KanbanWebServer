@@ -453,7 +453,7 @@ const demoteTask = async (req, res, next) => {
 const addTaskNotes = async (req, res, next) => {
   const myUsername = await checkValidUser(req);
   if (myUsername) {
-    const { Add_Task_Notes, Task_id } = req.body;
+    const { Add_Task_Notes, Task_id, Task_plan } = req.body;
     if (Task_id) {
       try {
         // Query db to get task state and existing notes to add on
@@ -478,12 +478,24 @@ const addTaskNotes = async (req, res, next) => {
             const currentNote = `${timeStamp}\nUser: ${myUsername}\nTask State: ${currentTaskState}\nAction: Add Note\nTask Note:\n${
               Add_Task_Notes ?? ""
             }`;
-            const mergedNote = `${currentNote}\n\n\n${oldNotes}`;
+            let mergedNote = `${currentNote}\n\n\n${oldNotes}`;
             try {
-              // Update to db
-              const sql =
-                "UPDATE tasks SET Task_notes = ?, Task_owner = ? WHERE Task_id = ?";
-              const queryArr = [mergedNote, myUsername, Task_id];
+              // Only allow open state addnote to save to plan
+              let sql = "";
+              let queryArr = [];
+              if (currentTaskState === "open") {
+                sql =
+                  "UPDATE tasks SET Task_notes = ?, Task_owner = ?, Task_plan = ? WHERE Task_id = ?";
+                queryArr = [mergedNote, myUsername, Task_plan, Task_id];
+                const currentNote2 = `${timeStamp}\nUser: ${myUsername}\nTask State: ${currentTaskState}\nAction: Add Note and Change Plan\nTask Note:\n${
+                  Add_Task_Notes ?? ""
+                }`;
+                mergedNote = `${currentNote2}\n\n\n${oldNotes}`;
+              } else {
+                sql =
+                  "UPDATE tasks SET Task_notes = ?, Task_owner = ? WHERE Task_id = ?";
+                queryArr = [mergedNote, myUsername, Task_id];
+              }
               const resultsUpdate = await dbQuery(sql, queryArr);
               res.status(200).send(resultsUpdate);
             } catch (error) {
