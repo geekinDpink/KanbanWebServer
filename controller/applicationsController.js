@@ -207,7 +207,7 @@ const editApplication = async (req, res, next) => {
     const {
       App_Acronym,
       App_Description,
-      App_Rnumber,
+      // App_Rnumber,
       App_StartDate,
       App_EndDate,
       App_Permit_Create,
@@ -217,14 +217,13 @@ const editApplication = async (req, res, next) => {
       App_Permit_Done,
     } = req.body;
 
-    const invalidRnumber = valRnumber(App_Rnumber);
-    if (!invalidRnumber) {
+    if (App_Acronym && App_Description) {
       try {
         const sql =
-          "UPDATE applications SET App_Description = ?, App_Rnumber = ?, App_startDate = ?, App_endDate = ?, App_permit_Create=?, App_permit_Open=?, App_permit_toDoList = ?, App_permit_Doing = ?, App_permit_Done = ? WHERE App_Acronym = ?";
+          "UPDATE applications SET App_Description = ?, App_startDate = ?, App_endDate = ?, App_permit_Create=?, App_permit_Open=?, App_permit_toDoList = ?, App_permit_Doing = ?, App_permit_Done = ? WHERE App_Acronym = ?";
         const queryArr = [
           App_Description,
-          App_Rnumber,
+          // App_Rnumber,
           App_StartDate,
           App_EndDate,
           App_Permit_Create,
@@ -241,7 +240,7 @@ const editApplication = async (req, res, next) => {
         res.status(500).send("Database transaction/connection error");
       }
     } else {
-      res.status(404).send(invalidRnumber);
+      res.status(404).send("Invalid Request due to missing parameters");
     }
   } else {
     res.status(403).send("Not authorised");
