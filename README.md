@@ -91,7 +91,7 @@ USE `kanban`;
 
 CREATE TABLE IF NOT EXISTS `applications` (
   `App_Acronym` varchar(50) NOT NULL,
-  `App_Description` varchar(500) NOT NULL,
+  `App_Description` longtext NOT NULL,
   `App_Rnumber` int NOT NULL,
   `App_startDate` date DEFAULT NULL,
   `App_endDate` date DEFAULT NULL,
@@ -117,8 +117,8 @@ CREATE TABLE IF NOT EXISTS `plans` (
 
 CREATE TABLE IF NOT EXISTS `tasks` (
   `Task_name` varchar(50) NOT NULL,
-  `Task_description` varchar(500) DEFAULT NULL,
-  `Task_notes` varchar(2500) DEFAULT NULL,
+  `Task_description` longtext,
+  `Task_notes` longtext,
   `Task_id` varchar(50) NOT NULL,
   `Task_plan` varchar(50) DEFAULT NULL,
   `Task_app_Acronym` varchar(50) NOT NULL,
