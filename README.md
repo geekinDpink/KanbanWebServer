@@ -1,14 +1,15 @@
 # Kanban Board Task Management System Backend
 
 ## About this project
-Backend for kanbanfrontend. Designed with Model View Controller architecture and is serving as the controller layer. The model layer/database is SQL. 
+Backend for kanbanfrontend. Designed with Model View Controller architecture and is serving as the controller layer. The model layer/database is MySQL.
+User authentication with bycrypt and JSON webtoken.
 
 ## Setup
-Prerequisite:
+### Prerequisite
 1. Install sql workbench community edition
 2. Install node
 
-Steps:
+### Steps
 1. Run the 2 scripts below to create database and table
 2. npm i to install the node modules/dependencies
 3. npm run test to run the node server
