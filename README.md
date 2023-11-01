@@ -128,11 +128,11 @@ CREATE TABLE IF NOT EXISTS `tasks` (
 | /plan/acronym/name | PUT | Edit Plan | {"Plan_app_Acronym":"string"}, {"Plan_MVP_name":"string"}, {"Plan_startDate":"date"}, {"Plan_endDate":"date"}, {"Plan_color":"string"} | 200 (Success), 403 (Not Authorized), 404 (Invalid Request), 500 (Error) |
 
 ### Apps
-| Endpoint | Method | Description | Parameters |
-|---|---|---|---|
-| /apps | GET | Get All Applications | N/A |
-| /app/acronym | POST | Get Application By Acronym | {"App_Acronym":"string"} |
-| /app | POST | Create Application | {"App_Acronym":"string"}, {"App_Description":"string"}, {"App_Rnumber":"integer"}, {"App_StartDate":"date"}, {"App_EndDate":"date"}, {"App_Permit_Create":"boolean"}, {"App_Permit_Open":"boolean"}, {"App_Permit_ToDoList":"boolean"}, {"App_Permit_Doing":"boolean"}, {"App_Permit_Done":"boolean"} |
-| /app | PUT | Edit Application | {"App_Acronym":"string"}, {"App_Description":"string"}, {"App_StartDate":"date"}, {"App_EndDate":"date"}, {"App_Permit_Create":"boolean"}, {"App_Permit_Open":"boolean"}, {"App_Permit_ToDoList":"boolean"}, {"App_Permit_Doing":"boolean"}, {"App_Permit_Done":"boolean"} |
+| Endpoint | Method | Description | Parameters | Response |
+|---|---|---|---|---|
+| /apps | GET | Get All Applications | N/A | 200 (Success), 403 (Not Authorized), 404 (No Record Found), 500 (Error) |
+| /app/acronym | POST | Get Application By Acronym | {"App_Acronym":"string"} | 200 (Success), 403 (Not Authorized), 404 (No Record Found), 500 (Error) |
+| /app | POST | Create Application | {"App_Acronym":"string"}, {"App_Description":"string"}, {"App_Rnumber":"integer"}, {"App_StartDate":"date"}, {"App_EndDate":"date"}, {"App_Permit_Create":"boolean"}, {"App_Permit_Open":"boolean"}, {"App_Permit_ToDoList":"boolean"}, {"App_Permit_Doing":"boolean"}, {"App_Permit_Done":"boolean"} | 200 (Success), 403 (Not Authorized), 404 (Invalid Request or Rnumber Validation Error), 500 (Error) |
+| /app | PUT | Edit Application | {"App_Acronym":"string"}, {"App_Description":"string"}, {"App_StartDate":"date"}, {"App_EndDate":"date"}, {"App_Permit_Create":"boolean"}, {"App_Permit_Open":"boolean"}, {"App_Permit_ToDoList":"boolean"}, {"App_Permit_Doing":"boolean"}, {"App_Permit_Done":"boolean"} | 200 (Success), 403 (Not Authorized), 404 (Invalid Request), 500 (Error) |
 
 ## Summary
