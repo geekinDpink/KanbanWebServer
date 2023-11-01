@@ -88,3 +88,51 @@ CREATE TABLE IF NOT EXISTS `tasks` (
   UNIQUE KEY `Task_id_UNIQUE` (`Task_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 ```
+## API Documentation
+### Users
+| Endpoint | Method | Description | Parameters | Responses |
+|---|---|---|---|---|
+| /login | POST | Log in a user | `{ "username": "string", "password": "string" }` | 200: Successful login 403: Invalid username/password 404: Inactive user 500: Database error |
+| /register | POST | Register a new user (Admin only) | `{ "username": "string", "password": "string", "email": "string", "usergroup": "string" }` | 200: User registration successful 403: Not authorized 404: Invalid input or existing username 500: Database error |
+| /users | PUT | Update user details | `{ "username": "string", "password": "string", "email": "string", "usergroup": "string", "active": "boolean" }` | TBD |
+| /users | POST | Get all users (Admin only) | N/A | TBD |
+| /user | GET | Get own user details (My Profile) | N/A | TBD |
+| /user | POST | Get user by ID (Admin only) | `{ "username": "string" }` | TBD |
+| /user/auth | GET | Check valid user and isAdmin | N/A | 200: User is valid and isAdmin 403: Not authorized |
+| /user/permits | POST | Check permits | `{ "App_Acronym": "string" }` | TBD |
+
+### Usergroups
+| Endpoint | Method | Description | Parameters | Responses |
+|---|---|---|---|---|
+| /usergroups | GET | Get all user groups (Multiselect) | N/A | 200: List of user groups 403: Not authorized 500: Database error |
+| /usergroups | POST | Create a new user group (Admin only) | `{"usergroup": "string"}` | 200: User group created successfully 403: Not authorized 404: Invalid request due to missing parameters 500: Database error |                                                                                                       |
+
+### Tasks
+| Endpoint | Method | Description | Parameters | Responses |
+|---|---|---|---|---|
+| /tasks | GET | Get all tasks | N/A | 200: List of tasks 403: Not authorized 404: No records found 500: Database error |
+| /tasks/acronym | POST | Get tasks by application acronym | `{"Task_app_Acronym": "string"}` | 200: List of tasks 403: Not authorized 404: No records found 500: Database error |
+| /task | POST | Create a new task | `{"Task_name": "string", "Task_description": "string", "Add_task_notes": "string", "Task_id": "string", "Task_plan": "string", "Task_app_Acronym": "string", "Task_state": "string", "Task_creator": "string", "Task_owner": "string", "Task_createDate": "string"}` | 200: Task created successfully 403: Not authorized 404: Invalid request due to missing parameters 500: Database error |
+| /task | PUT | Edit an existing task | `{"Task_name": "string", "Task_description": "string", "Task_notes": "string", "Task_id": "string", "Task_plan": "string", "Task_app_Acronym": "string", "Task_state": "string", "Task_creator": "string", "Task_owner": "string", "Task_createDate": "string"}` | 200: Task updated successfully 403: Not authorized 500: Database error |
+| /task/note | POST | Add notes to a task | `{"Add_task_notes": "string", "Task_id": "string", "Task_plan": "string"}` | 200: Notes added successfully 403: Not authorized 404: Task not found 500: Database error |
+| /task/id | POST | Get a task by ID | `{"Task_id": "string"}` | 200: Task details 403: Not authorized 404: Task not found 500: Database error |
+| /task/promote | PUT | Promote a task to the next state | `{"Task_id": "string", "Add_Task_Notes": "string", "Task_plan": "string"}` | 200: Task promoted successfully 403: Not authorized 404: Task not found 500: Database error |
+| /task/demote | PUT | Demote a task to the previous state | `{"Task_id": "string", "Add_Task_Notes": "string", "Task_plan": "string"}` | 200: Task demoted successfully 403: Not authorized 404: Task not found 500: Database error |
+
+### Plans
+| Endpoint | Method | Description | Parameters |  |
+|---|---|---|---|---|
+| /plan | POST | Create Plan | {"Plan_MVP_name":"string"}, {"Plan_startDate":"date"}, {"Plan_endDate":"date"}, {"Plan_app_Acronym":"string"}, {"Plan_color":"string"} | 200 (Success), 403 (Not Authorized), 404 (Invalid Request), 500 (Error) |
+| /plans/acronym | POST | Get All Plans By Acronym | {"Plan_app_Acronym":"string"} | 200 (Success), 403 (Not Authorized), 404 (Invalid Request), 500 (Error) |
+| /plan/acronym/name | POST | Get Plan By Acronym and Name | {"Plan_app_Acronym":"string"}, {"Plan_MVP_name":"string"} | 200 (Success), 403 (Not Authorized), 404 (Invalid Request), 500 (Error) |
+| /plan/acronym/name | PUT | Edit Plan | {"Plan_app_Acronym":"string"}, {"Plan_MVP_name":"string"}, {"Plan_startDate":"date"}, {"Plan_endDate":"date"}, {"Plan_color":"string"} | 200 (Success), 403 (Not Authorized), 404 (Invalid Request), 500 (Error) |
+
+### Apps
+| Endpoint | Method | Description | Parameters |
+|---|---|---|---|
+| /apps | GET | Get All Applications | N/A |
+| /app/acronym | POST | Get Application By Acronym | {"App_Acronym":"string"} |
+| /app | POST | Create Application | {"App_Acronym":"string"}, {"App_Description":"string"}, {"App_Rnumber":"integer"}, {"App_StartDate":"date"}, {"App_EndDate":"date"}, {"App_Permit_Create":"boolean"}, {"App_Permit_Open":"boolean"}, {"App_Permit_ToDoList":"boolean"}, {"App_Permit_Doing":"boolean"}, {"App_Permit_Done":"boolean"} |
+| /app | PUT | Edit Application | {"App_Acronym":"string"}, {"App_Description":"string"}, {"App_StartDate":"date"}, {"App_EndDate":"date"}, {"App_Permit_Create":"boolean"}, {"App_Permit_Open":"boolean"}, {"App_Permit_ToDoList":"boolean"}, {"App_Permit_Doing":"boolean"}, {"App_Permit_Done":"boolean"} |
+
+## Summary
