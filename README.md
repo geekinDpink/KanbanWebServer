@@ -1,62 +1,19 @@
-R2
-TODO
-Create and update app validation (Especially RN)
-Validate insert Plan dup
-Get All Plans - no results - multiple toast in Create Plan
+# Kanban Board Task Management System Backend
 
-Plan name unique?
+## About this project
+Backend for kanbanfrontend. Designed with Model View Controller architecture and is serving as the controller layer. The model layer/database is SQL. 
 
-Done
-Increase App RN when create task
-Auth to promote/demote task
-API promote task, demote task, save note
-Notes Generation
-Send Email when done
-Dynamic auth
-Change Owner when add note (on top of promote and demote)
-Hardcode permit for Create App and Edit, project lead
-Hardcode permit for Create Plan and Edit, project manager
+## Setup
+Prerequisite:
+1. Install sql workbench community edition
+2. Install node
 
----
+Steps:
+1. Run the 2 scripts below to create database and table
+2. npm i to install the node modules/dependencies
+3. npm run test to run the node server
 
-R1
-Error Handling: Missing Params - 400, Authorized users, DB Query error [test case: wrong dbconfig] - 500, JWT signTODO
-TODO Add expiry and refresh token
-TODO DB Query Error Handling - no record for login
-TODO Update cannot find matching records
-TODO CORS prevent u
-TODO Edit Msg Error
-
-Done
-Got token -> Sessionislogged on
-Validate inputs AND Return error code
-Login API provide isAdmin
-New Page API isAdmin?
-password.match(rule), let rule = /^(?=._\d)(?=._[~`!@#$%^&*()--+={}\[\]|\\:;"'<>,.?/_₹])(?=.\*[a-zA-Z]).{8,10}$/;
-From token, decrpyt to get username and to get query for userroles
-Password contains special char, upper and lower
-Add Checkgroup function
-Refactor admin check from substring to string
-check user active middleware
-
-Optional
-catchasyncerror wrapper
-Send JWT in cookies
-Cookie Parser
-
-CORS to protect what? localhost:3000 and credential
-whitelist resource
-Protect nodejs from unauthorised usage
-
-JWT purpose?
-Maintain authencity of session
-
-Usergroup?
-
-MVC model to ensure each tier perform its assigned task
-Webpack bundler - bundle code and JSX transpiler
-
-###Create DB and Table (Useraccounts and Usergroups) SQL Script
+### Create DB and Table (Useraccounts and Usergroups) SQL Script
 
 ```
 CREATE DATABASE IF NOT EXISTS `kanban` DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci;
@@ -84,7 +41,7 @@ INSERT INTO `usergroups` (`usergroup`) VALUES ('developer');
 
 ```
 
-###Create Table (Application) SQL Script
+### Create Table (Application) SQL Script
 
 ```
 USE `kanban`;
