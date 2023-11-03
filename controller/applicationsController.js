@@ -123,6 +123,11 @@ const getPaginateApp = async (req, res, next) => {
       const results = await dbQuery(sql, queryArr);
 
       if (results.length > 0) {
+      try {
+        const sql2 = "SELECT COUNT(*) FROM applications";
+        const queryArr2 = [];
+        const results2 = await dbQuery(sql2, queryArr2);
+
         // format start and end date to DD/MM/YYYY
         const formatRes = results.map((app) => {
           return {
@@ -131,10 +136,14 @@ const getPaginateApp = async (req, res, next) => {
             App_endDate: app.App_endDate?.toLocaleDateString(),
           };
         });
-        res.status(200).send(formatRes);
-      } else {
-        res.status(404).send("No record found");
+        res.status(200).json({data:formatRes, total:results2[0]["COUNT(*)"]});
+      } catch (error) {
+        console.log(error);
+        res.status(500).send("Database transaction/connection error");
       }
+    } else {
+      res.status(404).send("No record found");
+    }
     } catch (error) {
       console.log(error);
       res.status(500).send("Database transaction/connection error");
