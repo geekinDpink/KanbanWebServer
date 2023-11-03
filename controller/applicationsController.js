@@ -118,7 +118,7 @@ const getPaginateApp = async (req, res, next) => {
   if (myUsername) {
     try {
       const { cursor, itemsPerPage } = req.body;
-      const sql = "SELECT * FROM applications WHERE App_Acronym > ? LIMIT ?";
+      const sql = "SELECT * FROM applications WHERE App_Acronym > ? ORDER BY App_Acronym LIMIT ?";
       const queryArr = [cursor, itemsPerPage];
       const results = await dbQuery(sql, queryArr);
 
