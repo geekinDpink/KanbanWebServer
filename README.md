@@ -15,8 +15,8 @@ User authentication with bycrypt and JSON webtoken.
     DB_PASSWORD = xx
     SALT_ROUNDS = xxx
     JWT_SECRET = xxx
-3. npm i to install the node modules/dependencies
-4. npm run test to run the node server
+3. Key npm i in the terminal to install the node modules/dependencies
+4. Key node index in the terminal to run the node server
 
 ### Create DB and Table (Useraccounts and Usergroups) SQL Script
 
