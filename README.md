@@ -11,8 +11,12 @@ User authentication with bycrypt and JSON webtoken.
 
 ### Steps
 1. Run the 2 scripts below to create database and table
-2. npm i to install the node modules/dependencies
-3. npm run test to run the node server
+2. Add .env file with the following:
+    DB_PASSWORD = xx
+    SALT_ROUNDS = xxx
+    JWT_SECRET = xxx
+3. npm i to install the node modules/dependencies
+4. npm run test to run the node server
 
 ### Create DB and Table (Useraccounts and Usergroups) SQL Script
 
@@ -34,7 +38,7 @@ CREATE TABLE IF NOT EXISTS `usergroups` (
 PRIMARY KEY (`usergroup`)
 ) ENGINE=InnoDB CHARSET=utf8;
 
-INSERT INTO `useraccounts` (`username`, `password`, `email`, `usergroup`, `active`) VALUES ('tom', '$2b$10$p93y0DPA53BNSqiC7JAD8uFYI0ypnJBsq4cnRYoHLAFi.lcTr5RRO', 'test@test.com', 'adminuseraccounts', true);
+INSERT INTO `useraccounts` (`username`, `password`, `email`, `usergroup`, `active`) VALUES ('tom', '$2b$10$p93y0DPA53BNSqiC7JAD8uFYI0ypnJBsq4cnRYoHLAFi.lcTr5RRO', 'test@test.com', 'admin', true);
 INSERT INTO `usergroups` (`usergroup`) VALUES ('admin');
 INSERT INTO `usergroups` (`usergroup`) VALUES ('project manager');
 INSERT INTO `usergroups` (`usergroup`) VALUES ('project lead');
