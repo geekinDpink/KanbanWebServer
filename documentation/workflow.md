@@ -9,7 +9,7 @@ flowchart TD
     subgraph user authentication check
     var1(valid token?)
     var1 --> |No| err1(Err Msg: Not authorised)
-    var1 --> |Yes| var3(user exist?)
+    var1 --> |Yes| var3(active user?)
     var3 --> |No| err2(Err Msg: Not authorised)
     end
 
