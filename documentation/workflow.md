@@ -1,4 +1,4 @@
-### Workflow
+### Typical Controller Workflow
 ``` mermaid
 flowchart TD
     A1[Request] --> Pg1{Index Page}

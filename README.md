@@ -1,7 +1,12 @@
 # Kanban Board Task Management System Backend
 
 ## About this project
-Backend for kanbanfrontend. Designed with Model View Controller architecture and is serving as the controller layer. The model layer/database is MySQL.
+This project is the backend for [kanbanfrontend](https://github.com/geekinDpink/KanbanWebClient) and is part of the Kanban Board/Task Management system which adopts a N-tier architeture with the following logical layers:
+- Presentation layer: Kanban Frontend (Display interface to user)
+- Application/Business Logic Layer: Kanban WebServer (Implement Core functionality)
+- Database Layer: Interact with database and handle data
+<br>
+This backend Design is inspired by Model View Controller design pattern with the Express Router directing request to the controller, which in turn handles the requests and return responses to the client.
 User authentication with bycrypt and JSON webtoken.
 
 ## Setup
